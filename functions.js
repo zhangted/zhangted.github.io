@@ -416,64 +416,64 @@ var Blackjack = (function() {
                 let playerTotal = this.finalTotals[i];
                 if(playerTotal > dealerTotal && playerTotal < 21) {
                     if(this.finalTotals.length > 1) {
-                        this.gameStatus.innerHTML += "Hand " + parseInt(i+1) + ": You won!<br />";
+                        this.gameStatus.innerHTML += "Hand " + parseInt(i+1) + ": You won! (<font style='color:#32CD32'> +$" + parseInt(+playerHand.bet) +"</font> )<br />";
                     }
                     else {
-                        this.gameStatus.innerHTML = "You won!";
+                        this.gameStatus.innerHTML = "You won! (<font style='color:#32CD32'> +$" + parseInt(+playerHand.bet) +" </font>)";
                     }
                     this.player.balance = parseInt(+this.player.balance + +playerHand.bet * 2);
                 }
                 else if(playerTotal == dealerTotal && playerTotal <= 21) {
                     if(this.finalTotals.length > 1) {
-                        this.gameStatus.innerHTML += "Hand " + parseInt(i+1) + ": Push! (Tie)<br />";
+                        this.gameStatus.innerHTML += "Hand " + parseInt(i+1) + ": Push! (<font style='color:#32CD32'> +$0</font> )<br />";
                     }
                     else {
-                        this.gameStatus.innerHTML = "Push! (Tie)";
+                        this.gameStatus.innerHTML = "Push! (<font style='color:#32CD32'> +$0</font> )";
                     }
                     this.player.balance = parseInt(+this.player.balance + +playerHand.bet);
                 }
                 else if(playerTotal > 21) {
                     if(this.finalTotals.length > 1) {
-                        this.gameStatus.innerHTML += "Hand " + parseInt(i+1) + ": You bust!<br />";
+                        this.gameStatus.innerHTML += "Hand " + parseInt(i+1) + ": You bust! (<font style='color:#ff0000'> -$" + playerHand.bet + "</font> )<br />";
                     }
                     else {
-                        this.gameStatus.innerHTML = "You bust!";
+                        this.gameStatus.innerHTML = "You bust! (<font style='color:#ff0000'> -$"+ playerHand.bet + "</font> )";
                     }
                 }
                 else if(playerTotal == 21) {
                     if(this.finalTotals.length > 1) {
-                        this.gameStatus.innerHTML += "Hand " + parseInt(i+1) + ": Blackjack!<br />";
+                        this.gameStatus.innerHTML += "Hand " + parseInt(i+1) + ": Blackjack! (<font style='color:#32CD32'> +$"+ parseInt(+playerHand.bet * 1.5) +"</font> )<br />";
                     }
                     else {
-                        this.gameStatus.innerHTML = "Blackjack!";
+                        this.gameStatus.innerHTML = "Blackjack! (<font style='color:#32CD32'> +$"+ parseInt(+playerHand.bet * 1.5) +"</font> )";
                     }
                     this.player.balance = parseInt(+this.player.balance + +playerHand.bet * 2.5); //Blackjack pays 1.5 to 1
                 }
                 else {
                     if(dealerTotal > 21 && playerTotal <= 21) {
                         if(this.finalTotals.length > 1) {
-                            this.gameStatus.innerHTML += "Hand " + parseInt(i+1) + ": Dealer busts!<br />";
+                            this.gameStatus.innerHTML += "Hand " + parseInt(i+1) + ": Dealer busts! (<font style='color:#32CD32'> +$"+ (+playerHand.bet) +"</font> )<br />";
                         }
                         else {
-                            this.gameStatus.innerHTML = "Dealer busts!";
+                            this.gameStatus.innerHTML = "Dealer busts! (<font style='color:#32CD32'> +$"+ (+playerHand.bet) +" </font>)";
                         }
                         this.player.balance = parseInt(+this.player.balance + +playerHand.bet * 2);
                     }
                     else {
                         if(dealerTotal == 21) {
                             if(this.finalTotals.length > 1) {
-                                this.gameStatus.innerHTML += "Hand " + parseInt(i+1) + ": Dealer has blackjack :(<br />";
+                                this.gameStatus.innerHTML += "Hand " + parseInt(i+1) + ": Dealer has blackjack.. (<font style='color:#ff0000'> -$"+ (+playerHand.bet) +"</font> )<br />";
                             }
                             else {
-                                this.gameStatus.innerHTML = "Dealer has blackjack!"
+                                this.gameStatus.innerHTML = "Dealer has blackjack.. (<font style='color:red'>- $"+ (+playerHand.bet) +"</font>)";
                             }
                         }
                         else {
                             if(this.finalTotals.length > 1) {
-                                this.gameStatus.innerHTML += "Hand " + parseInt(i+1) + ": Dealer high. You lost!<br />";
+                                this.gameStatus.innerHTML += "Hand " + parseInt(i+1) + ": Dealer high. You lost! (<font style='color:#ff0000'> -$"+ (+playerHand.bet) +"</font> )<br />";
                             }
                             else {
-                                this.gameStatus.innerHTML = "Dealer high. You lost!";
+                                this.gameStatus.innerHTML = "Dealer high. You lost! (<font style='color:#ff0000'> -$"+ (+playerHand.bet) +"</font> )";
                             }
                         }
                     }
