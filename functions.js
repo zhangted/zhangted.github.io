@@ -10,7 +10,7 @@ var Blackjack = (function() {
         view() {
             var suitsHTML = {
                 'heart' : '&hearts;',
-                'diamond' : '&#9670;',
+                'diamond' : '&diams;',
                 'club' : '&clubs;',
                 'spade' : '&spades;'
             }
@@ -128,6 +128,7 @@ var Blackjack = (function() {
             this.hand = new Array();
             this.total = 0;
             this.bet = 0;
+            this.prevTotals = [];
             this.complete = false;
             this.options = new Map();
             this.options.set("hit", false);
@@ -197,6 +198,7 @@ var Blackjack = (function() {
 
         refresh() {
             this.total = this.getTotal();
+            this.prevTotals.push(this.total);
             if(this.total >= 21) {
                 this.options.set("hit", false);
                 this.options.set("stay", false);
@@ -226,7 +228,7 @@ var Blackjack = (function() {
         this.dealButtonHandler = function() {
             //Dealer score is hidden 
             this.dealerScore = document.getElementById('dealer-score').getElementsByTagName("span")[0];
-            this.dealerScore.innerHTML = "-Hidden-";
+            this.dealerScore.innerHTML = "(Hidden)";
             //Hide bet slider/deal bttn
             this.dealButton.style.display = "none";
             this.betSlider.style.display = "none";
@@ -246,6 +248,8 @@ var Blackjack = (function() {
                 this.dealer.hand.add(this.deck.draw());
             }
             this.player.hands[0].add(this.deck.draw());
+
+            this.dealerIdx = 1;
             //If dealer gets blackjack
             if(this.dealer.hand.total == 21) {
                 this.finalTotals.push(this.player.hands[this.player.activeHand].total); //Finalize player's hand
@@ -321,6 +325,11 @@ var Blackjack = (function() {
             this.dealerScore.innerHTML = this.dealer.hand.total;
         }
 
+        this.refreshDealerScore = function() {
+            this.dealerScore = document.getElementById('dealer-score').getElementsByTagName("span")[0];
+            this.dealerScore.innerHTML =  this.dealer.hand.total;
+        }
+
         this.endActiveHand = function() {
             this.finalTotals.push(this.player.hands[this.player.activeHand].total); //Finalize player's active hand total
             this.refreshTotals(); //Update GUI
@@ -347,38 +356,59 @@ var Blackjack = (function() {
         }
 
         this.refreshDealerCards = function() {
+            this.dealerIdx += 1;
+            this.dealerCards.innerHTML += this.dealer.getHand()[this.dealerIdx].view(); //Update dealer's cards on GUI
+        }
+
+        this.refreshAllDealerCards = function() {
             let dealerCards = "";
             for(let i = 0; i < this.dealer.getHand().length; i++) {
-                dealerCards += this.dealer.getHand()[i].view(); //Update dealer's cards on GUI
+               dealerCards += this.dealer.getHand()[i].view(); //Update dealer's cards on GUI
             }
             this.dealerCards.innerHTML = dealerCards;
         }
 
-        this.endTurn = function() {
-            this.dealer.getHand()[0].faceUp = true; //Turn dealer's first card faceUp
-            while(this.dealer.hand.total < 17) { 
-                this.dealer.hand.add(this.deck.draw()); //Dealer has to hit until total is >= 17
-                this.refreshDealerCards();
-            }      
-            setTimeout(this.refreshDealerCards(), 2000); //Update GUI
-            
-            if(this.player.hands.length == 1) { //Single hand => update dealer and player scores
-                this.refreshEnd(0);
-            }
-            else { //Multiple hands (split)
-                this.playerScore.innerHTML = "--";
-                this.gameStatus.innerHTML = "";
-            }
 
-            this.displayResult(); //Resolve win/loss and balance changes for the player
-            this.refreshBalance(); //Update balance on GUI
+        
+        this.sleep = (milliseconds) => {
+            return new Promise(resolve => setTimeout(resolve, milliseconds));
+        }
+
+        this.endTurn = function() {
             //Hide options
             this.hitButton.style.display = "none";
             this.stayButton.style.display = "none";
             this.doubleButton.style.display = "none";
             this.splitButton.style.display = "none";
-            //Continue button (a pause for player to review their last bet/hands)
-            this.continueButton.style.display = "";
+            this.dealingStatus.innerHTML = "<p style = 'font-size:23px; color:#ffffff;'><br />Dealer deals to 17+</p><br />";
+            this.dealer.getHand()[0].faceUp = true; //Turn dealer's first card faceUp
+            this.refreshAllDealerCards();
+            let delay = 1000;
+            while(this.dealer.hand.total < 17) { 
+                this.dealer.hand.add(this.deck.draw());//Dealer has to hit until total is >= 17
+                this.sleep(delay).then(() => {
+                    this.refreshDealerCards();
+                });
+                delay += 1000;
+            }      
+
+            this.sleep(delay).then(() => { 
+                if(this.player.hands.length == 1) { //Single hand => update dealer and player scores
+                    this.refreshEnd(0);
+                }
+                else { //Multiple hands (split)
+                    this.playerScore.innerHTML = "--";
+                    this.gameStatus.innerHTML = "";
+                }
+                this.sleep(delay * .4).then(() => {
+                    this.displayResult(); //Resolve win/loss and balance changes for the player
+                    this.sleep(delay * .5).then(() => {
+                        this.refreshBalance(); //Update balance on GUI
+                        //Continue button (a pause for player to review their last bet/hands)
+                        this.continueButton.style.display = "";
+                    });
+                });
+            });
         }
     
         this.continueButtonHandler = function() {
@@ -394,8 +424,10 @@ var Blackjack = (function() {
             this.dealerCards.innerHTML = "";
             this.playerCards.innerHTML = "";
             //Reset scores on screen
-            this.dealerScore.innerHTML = "--Hidden--";
+            this.dealerScore.innerHTML = "(Hidden)";
             this.playerScore.innerHTML = "0";
+
+            this.dealingStatus.innerHTML = "";
 
             if(this.player.balance > 0) { //Player still has money
                 this.dealButton.style.display = ""; //Show buttons/sliders that allow betting/dealing
@@ -416,10 +448,10 @@ var Blackjack = (function() {
                 let playerTotal = this.finalTotals[i];
                 if(playerTotal > dealerTotal && playerTotal < 21) {
                     if(this.finalTotals.length > 1) {
-                        this.gameStatus.innerHTML += "Hand " + parseInt(i+1) + ": You won! (<font style='color:#32CD32'> +$" + parseInt(+playerHand.bet) +"</font> )<br />";
+                        this.gameStatus.innerHTML += "Hand " + parseInt(i+1) + ": Your total is higher. You won! (<font style='color:#32CD32'> +$" + parseInt(+playerHand.bet) +"</font> )<br />";
                     }
                     else {
-                        this.gameStatus.innerHTML = "You won! (<font style='color:#32CD32'> +$" + parseInt(+playerHand.bet) +" </font>)";
+                        this.gameStatus.innerHTML = "Your total is higher. You won! (<font style='color:#32CD32'> +$" + parseInt(+playerHand.bet) +" </font>)";
                     }
                     this.player.balance = parseInt(+this.player.balance + +playerHand.bet * 2);
                 }
@@ -434,10 +466,10 @@ var Blackjack = (function() {
                 }
                 else if(playerTotal > 21) {
                     if(this.finalTotals.length > 1) {
-                        this.gameStatus.innerHTML += "Hand " + parseInt(i+1) + ": You bust! (<font style='color:#ff0000'> -$" + playerHand.bet + "</font> )<br />";
+                        this.gameStatus.innerHTML += "Hand " + parseInt(i+1) + ": Your total is over 21. You bust! (<font style='color:#ff0000'> -$" + playerHand.bet + "</font> )<br />";
                     }
                     else {
-                        this.gameStatus.innerHTML = "You bust! (<font style='color:#ff0000'> -$"+ playerHand.bet + "</font> )";
+                        this.gameStatus.innerHTML = "Your total is over 21. You bust! (<font style='color:#ff0000'> -$"+ playerHand.bet + "</font> )";
                     }
                 }
                 else if(playerTotal == 21) {
@@ -452,10 +484,10 @@ var Blackjack = (function() {
                 else {
                     if(dealerTotal > 21 && playerTotal <= 21) {
                         if(this.finalTotals.length > 1) {
-                            this.gameStatus.innerHTML += "Hand " + parseInt(i+1) + ": Dealer busts! (<font style='color:#32CD32'> +$"+ (+playerHand.bet) +"</font> )<br />";
+                            this.gameStatus.innerHTML += "Hand " + parseInt(i+1) + ": Dealer went over 21. Dealer busts! (<font style='color:#32CD32'> +$"+ (+playerHand.bet) +"</font> )<br />";
                         }
                         else {
-                            this.gameStatus.innerHTML = "Dealer busts! (<font style='color:#32CD32'> +$"+ (+playerHand.bet) +" </font>)";
+                            this.gameStatus.innerHTML = "Dealer went over 21. Dealer busts! (<font style='color:#32CD32'> +$"+ (+playerHand.bet) +" </font>)";
                         }
                         this.player.balance = parseInt(+this.player.balance + +playerHand.bet * 2);
                     }
@@ -546,6 +578,9 @@ var Blackjack = (function() {
             this.dealButton.style.display = "";
             this.betSlider.max = this.player.balance;
             this.betSlider.value = parseInt(this.player.balance * .1);
+            if(this.player.balance <= 10 && this.player.balance > 0) {
+                this.betSlider.value = 1;
+            }
             var playerBalance = this.player.balance;
             this.balanceStatus.innerHTML = "Your balance: <font style='color:#32CD32'>$" + (playerBalance - this.betSlider.value) + "</font>";
             this.betStatus.innerHTML = "Your bet: $" + this.betSlider.value;
@@ -587,6 +622,7 @@ var Blackjack = (function() {
             this.gameStatus = document.getElementById('status');
             this.balanceStatus = document.getElementById('balance');
             this.betStatus = document.getElementById('bet');
+            this.dealingStatus = document.getElementById('dealing');
             //Bet slider
             this.betSlider = document.getElementById('betSlider');
             

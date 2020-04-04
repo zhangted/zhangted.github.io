@@ -1,13 +1,13 @@
 {
-  "name": "blackjack",
+  "name": "video poker",
   "version": "1.0.0",
-  "description": "Blackjack",
+  "description": "Video Poker (Five-Card Draw)",
   "main": "main.js",
   "scripts": {
     "start": "electron ."
   },
   "keywords": [
-    "blackjack"
+    "Video Poker"
   ],
   "author": "Ted Zhang",
   "license": "ISC",
