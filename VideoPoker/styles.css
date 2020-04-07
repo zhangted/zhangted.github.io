@@ -116,8 +116,10 @@ body {
 
 .suit {
   position: absolute;
-  top: 46px;
-  left: 38px;
+  top: 25%;
+  left: 23%;
+  margin:15px;
+  margin-top:8px;
 }
 
 .rank {
