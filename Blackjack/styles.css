@@ -47,8 +47,8 @@ body {
 .card {
   font-family: 'Courier', serif;
   position: relative;
-  width: 110px;
-  height: 150px;
+  width: 95px;
+  height: 135px;
   border-radius: 5px;
   font-weight: bold;
   font-size: 1.65em;
