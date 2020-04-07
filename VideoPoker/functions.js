@@ -15,7 +15,7 @@ var FiveDrawPoker = (function() {
             }
             return `
                 <div class = 'top rank'>` + this.rank + `</div>
-                <div class = '`+ this.suit + `' >` + suitsHTML[this.suit] + `</div>
+                <div class = '`+ this.suit + ` suit' >` + suitsHTML[this.suit] + `</div>
                 <div class = 'bottom rank'>` + this.rank + `</div>
             `;
         }

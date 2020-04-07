@@ -105,16 +105,19 @@ body {
 .diamond, .heart {
   color:#E94F37;
   margin:auto;
-  padding-top: 112%;
-  padding-left: 103%;
   font-size: 60px;
 }
 
 .spade, .club {
   color:#393E41;
-  padding-top: 112%;
-  padding-left: 103%;
+  margin:auto;
   font-size: 60px;
+}
+
+.suit {
+  position: absolute;
+  top: 46px;
+  left: 38px;
 }
 
 .rank {
