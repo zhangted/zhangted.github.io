@@ -590,7 +590,7 @@ var Blackjack = (function() {
                 this.betSlider.value = 1;
             }
             var playerBalance = this.player.balance;
-            this.balanceStatus.innerHTML = "Your Balance: <span style='color:#32CD32'>$" + (playerBalance - this.betSlider.value) + "</span>";
+            this.balanceStatus.innerHTML = "Your Balance: <span style='color:#32CD32'>$" + (playerBalance) + "</span>";
             this.betStatus.innerHTML = "Bet: <span style='color:#32CD32'>$" + this.betSlider.value + "</span>";
             this.betSlider.oninput = function() {
                 if(this.value > 0) {
@@ -599,7 +599,6 @@ var Blackjack = (function() {
                 else {
                     document.getElementById('deal').disabled = true;
                 }
-                document.getElementById('balance').innerHTML = "Your Balance: <span style='color:#32CD32'>$" + (playerBalance - this.value) + "</span>";
                 document.getElementById('bet').innerHTML = "Bet: <span style='color:#32CD32'>$" + this.value + "</span>";
             }
         }
