@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Five-Draw Poker</title>
+    <link rel="stylesheet" href="reset.css">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+  
+  <div id ="container">
+      <br />
+      <table id="payoutTable">
+        <tr>
+          <td>PATTERN</td>
+          <th>     BET(1X)</th>
+          <th>     BET(2X)</th>
+          <th>     BET(3X)</th>
+          <th>    BET(4X)</th>
+          <th>    BET(5X)</th>
+        </tr>
+        <tr>
+          <td>ROYAL FLUSH.....................................</td>
+          <th>     250</th>
+          <th>     500</th>
+          <th>     750</th>
+          <th>    1000</th>
+          <th>    4000</th>
+        </tr>
+        <tr>
+          <td>STRAIGHT FLUSH................................</td>
+          <th>     50</th>
+          <th>     100</th>
+          <th>     150</th>
+          <th>    200</th>
+          <th>    250</th>
+        </tr>
+        <tr>
+          <td>FOUR OF A KIND.................................</td>
+          <th>     25</th>
+          <th>     50</th>
+          <th>     75</th>
+          <th>    100</th>
+          <th>    125</th>
+        </tr>
+        <tr>
+          <td>FULL HOUSE.......................................</td>
+          <th>     9</th>
+          <th>     18</th>
+          <th>     27</th>
+          <th>    36</th>
+          <th>    45</th>
+        </tr>
+        <tr>
+          <td>FLUSH................................................</td>
+          <th>     6</th>
+          <th>     12</th>
+          <th>     18</th>
+          <th>    24</th>
+          <th>    30</th>
+        </tr>
+        <tr>
+          <td>STRAIGHT...........................................</td>
+          <th>     4</th>
+          <th>     8</th>
+          <th>     12</th>
+          <th>    16</th>
+          <th>    20</th>
+        </tr>
+        <tr>
+          <td>THREE OF A KIND................................</td>
+          <th>     3</th>
+          <th>     6</th>
+          <th>     9</th>
+          <th>    12</th>
+          <th>    15</th>
+        </tr>
+        <tr>
+          <td>TWO PAIR...........................................</td>
+          <th>     2</th>
+          <th>     4</th>
+          <th>     6</th>
+          <th>    8</th>
+          <th>    10</th>
+        </tr>
+        <tr>
+          <td>JACKS OR BETTER (PAIR)......................</td>
+          <th>     1</th>
+          <th>     2</th>
+          <th>     3</th>
+          <th>    4</th>
+          <th>    5</th>
+        </tr>
+      </table>
+
+      <!--<div id="player-score" class="score">Your total: <span>0</span></div>-->
+      <div class="container" id="hand">
+        <!--cards start-->
+        <div id = "1">
+          <div id = "card1" class = "card">
+            <span>
+            </span>
+            <span>
+            </span>
+          </div>
+          <button id="hold1" class="green" type="button" disabled>HOLD</button>
+        </div>
+
+        <div id = "2">
+          <div id = "card2" class = "card">
+            <span>
+            </span>            
+            <span>
+            </span>
+          </div>
+          <button id="hold2" class="green" type="button" disabled>HOLD</button>
+        </div>
+
+        <div id = "3">
+          <div id = "card3" class = "card">
+            <span>
+            </span>
+            <span>
+            </span>
+          </div>
+          <button id="hold3" class="green" type="button" disabled>HOLD</button>
+        </div>
+
+        <div id = "4">
+          <div id = "card4" class = "card">
+            <span>
+            </span>
+            <span>
+            </span>
+          </div>
+          <button id="hold4" class="green" type="button" disabled>HOLD</button>
+        </div>
+
+        <div id = "5">
+          <div id = "card5" class = "card">
+            <span>
+            </span>
+            <span>
+            </span>
+          </div>
+          <button id="hold5" class="green" type="button" disabled>HOLD</button>
+        </div>
+        <!--cards end-->
+      </div>
+      <br /><br /><br /><br />
+      
+      <div id="patternStatus" class="blinking"></div>
+      
+    </div>
+
+
+    <div id="panel">
+      
+      <div id="status" class="status"></div>
+
+      <div class="columns">
+        <div id="balance" class="status">BALANCE: <span style='margin-left: 20px;color:rgb(43, 236, 37)'>$0</span></div>
+        <div id="" class="status"></div>
+      </div>
+      
+      <div class="columns" id="betColumn">  
+        <div id="bet" class="status">BASE BET: <span style="margin-left: 20px; color:rgb(43, 236, 37);">$0</span></div>
+        <input type="range" min="0" max="5" value="1" class="slider" id="betSlider">
+      </div>
+      <div class="columns" id="multiColumn">  
+        <div id="multiplier" class="status">MULTIPLIER: <span style="margin-left: 20px; color:yellow;">1X</span></div>
+        <input type="range" min="1" max="5" value="1" class="slider" id="multiSlider">
+      </div>
+
+      <button id="deal" class="blue" type="button">DEAL</button>
+      <button id="continue" class="blue" type="button">CONTINUE</button>
+      <button id="confirmholds" class= "blue" type="button">DRAW</button>
+      <button id="reset" class="blue" type="button">RESET</button>
+
+    </div>
+
+
+
+    <script type="text/javascript" src="functions.js"></script>
+    <script type="text/javascript">
+        new FiveDrawPoker().init();
+    </script>
+
+  </body>
+</html>

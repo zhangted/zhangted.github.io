@@ -1,0 +1,17 @@
+{
+  "name": "blackjack",
+  "version": "1.0.0",
+  "description": "Blackjack",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "keywords": [
+    "blackjack"
+  ],
+  "author": "Ted Zhang",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^8.2.0"
+  }
+}
