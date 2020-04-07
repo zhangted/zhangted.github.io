@@ -1,0 +1,12 @@
+html {
+    height: 100%;
+}
+body {
+    background-color: #200a00;
+    font-family: Courier;
+    font-size: 15px;
+    color: #dddddd;
+}
+a {
+    color: #dddddd;
+}
