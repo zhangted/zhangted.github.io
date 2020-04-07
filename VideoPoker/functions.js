@@ -226,7 +226,7 @@ var FiveDrawPoker = (function() {
                 this.betSlider.value = 1;
             }
             //Initial status
-            this.balanceStatus.getElementsByTagName('span')[0].innerHTML = '$' + (+playerBalance - +this.betSlider.value);
+            this.balanceStatus.getElementsByTagName('span')[0].innerHTML = '$' + (+playerBalance);
             this.betStatus.getElementsByTagName('span')[0].innerHTML = '$' + this.betSlider.value;
             this.multiStatus.getElementsByTagName('span')[0].innerHTML = this.multiSlider.value + 'X';
             let multiplier = this.multiSlider.value;
@@ -235,7 +235,6 @@ var FiveDrawPoker = (function() {
             }
             //Changing status with input
             this.betSlider.oninput = function() { 
-                document.getElementById('balance').getElementsByTagName('span')[0].innerHTML = '$' + (+playerBalance - (+this.value * +multiplier));
                 document.getElementById('bet').getElementsByTagName('span')[0].innerHTML = '$' + this.value;
                 if(this.value == 0) {
                     document.getElementById('deal').disabled = true;
@@ -250,7 +249,6 @@ var FiveDrawPoker = (function() {
                 document.getElementById('bet').getElementsByTagName('span')[0].innerHTML = '$' + document.getElementById('betSlider').value; 
                 document.getElementById('multiplier').getElementsByTagName('span')[0].innerHTML = this.value + 'X';
                 multiplier = this.value;
-                document.getElementById('balance').getElementsByTagName('span')[0].innerHTML = '$' + (+playerBalance - (+document.getElementById('betSlider').value * +multiplier));
                 for(let i = 0; i < 10; i++) {
                     for(let j = 0; j < 5; j++) {
                         if(j == multiplier - 1) {

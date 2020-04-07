@@ -105,16 +105,15 @@ body {
 .diamond, .heart {
   color:#E94F37;
   margin:auto;
-  padding-top: 40px;
-  padding-left: 37px;
+  padding-top: 112%;
+  padding-left: 103%;
   font-size: 60px;
 }
 
 .spade, .club {
   color:#393E41;
-  margin:auto;
-  padding-top: 40px;
-  padding-left: 37px;
+  padding-top: 112%;
+  padding-left: 103%;
   font-size: 60px;
 }
 
