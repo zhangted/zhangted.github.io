@@ -324,8 +324,8 @@ var FiveDrawPoker = (function() {
                     this.patternStatus.innerHTML = "ROYAL FLUSH!";
                     if(isFinal) {
                         this.resolveBalances(1, this.multiSlider.value-1);
-                        return;
                     }
+                    return;
                 }
                 else {
                     let consecutive = 0;
@@ -338,8 +338,8 @@ var FiveDrawPoker = (function() {
                                 this.patternStatus.innerHTML = "STRAIGHT FLUSH!";
                                 if(isFinal) {
                                     this.resolveBalances(2, this.multiSlider.value-1);
-                                    return;
                                 }
+                                return;
                             }
                         }
                         else {
@@ -353,16 +353,16 @@ var FiveDrawPoker = (function() {
                             this.patternStatus.innerHTML = "FOUR OF A KIND";
                             if(isFinal) {
                                 this.resolveBalances(3, this.multiSlider.value-1);
-                                return;
                             }
+                            return;
                         }
                     }
                     this.patternStatus.innerHTML = "FLUSH";
                     if(isFinal) {
                         //5 of 1 suit, NO 4 of 1 rank, NO 5 Consecutive rank
                         this.resolveBalances(5, this.multiSlider.value-1);
-                        return;
                     }
+                    return;
                 }
             }
             else { //Not 5 of 1 suit
@@ -372,8 +372,8 @@ var FiveDrawPoker = (function() {
                         this.patternStatus.innerHTML = "FOUR OF A KIND";
                         if(isFinal) {
                             this.resolveBalances(3, this.multiSlider.value - 1);
-                            return;
                         }
+                        return;
                     }
                 }
                 let tempMap = new Map([['2', 0], ['3', 0]]);
@@ -390,8 +390,8 @@ var FiveDrawPoker = (function() {
                     this.patternStatus.innerHTML = "FULL HOUSE";
                     if(isFinal) {
                         this.resolveBalances(4, this.multiSlider.value - 1);
-                        return;
                     }
+                    return;
                 }
                 let consecutive = 0;
                 for(var i of this.player.hand.ranksMap.values()) {
@@ -402,8 +402,8 @@ var FiveDrawPoker = (function() {
                             this.patternStatus.innerHTML = "STRAIGHT!";
                             if(isFinal) {
                                 this.resolveBalances(6, this.multiSlider.value - 1);
-                                return;
                             }
+                            return;
                         }
                     }
                     else {
@@ -417,8 +417,8 @@ var FiveDrawPoker = (function() {
                         this.patternStatus.innerHTML = "THREE OF A KIND";
                         if(isFinal) {
                             this.resolveBalances(7, this.multiSlider.value - 1);
-                            return;
                         }
+                        return;
                     }
                     if(i == 2) {
                         pairsCount += 1;
@@ -429,8 +429,8 @@ var FiveDrawPoker = (function() {
                     this.patternStatus.innerHTML = "TWO PAIR";
                     if(isFinal) {
                         this.resolveBalances(8, this.multiSlider.value - 1);
-                        return;
                     }
+                    return;
                 }
                 if(this.player.hand.ranksMap.get('J') == 2
                 || this.player.hand.ranksMap.get('Q') == 2
@@ -440,14 +440,14 @@ var FiveDrawPoker = (function() {
                     this.patternStatus.innerHTML = "JACKS OR BETTER (PAIR)";
                     if(isFinal) {
                         this.resolveBalances(9, this.multiSlider.value - 1);
-                        return;
                     }
+                    return;
                 }
             }
             if(isFinal) {
                 this.resolveBalances(0, 0);
-                return;
             }
+            return;
             
         }
         this.resolveBalances = function(row, col) {
