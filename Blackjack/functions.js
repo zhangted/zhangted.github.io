@@ -243,11 +243,15 @@ var Blackjack = (function() {
                 card.faceUp = false; //Dealer has one face down card
                 this.dealer.hand.add(card);
             }
-            this.player.hands[0].add(this.deck.draw());
+            let playerCard = this.deck.draw();
+            playerCard.faceUp = true;
+            this.player.hands[0].add(playerCard);
             if(this.dealer.getHand().length < 2) {
                 this.dealer.hand.add(this.deck.draw());
             }
-            this.player.hands[0].add(this.deck.draw());
+            playerCard = this.deck.draw();
+            playerCard.faceUp = true;
+            this.player.hands[0].add(playerCard);
 
             this.dealerIdx = 1;
             //If dealer gets blackjack
