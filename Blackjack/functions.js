@@ -240,8 +240,9 @@ var Blackjack = (function() {
             //Deal cards
             if(this.dealer.getHand().length < 2) {
                 let card = this.deck.draw();
-                card.faceUp = false //Dealer has one face down card
+                card.faceUp = false; //Dealer has one face down card
                 this.dealer.hand.add(card);
+                card.faceUp = true;
             }
             this.player.hands[0].add(this.deck.draw());
             if(this.dealer.getHand().length < 2) {
