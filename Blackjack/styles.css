@@ -23,7 +23,7 @@ body {
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-start;
-  height: 180px;
+  height: 29vh;
   position: relative;
   width:100%;
 }
@@ -123,7 +123,7 @@ body {
   border-top: 1px dashed #7e360d82;
   position: absolute;
   bottom: 0;
-  height: 30%;
+  height: 29vh;
   width: 100%;
   padding-top: 10px;
   background: #001104;
