@@ -10,3 +10,8 @@ body {
 a {
     color: #dddddd;
 }
+.links {
+    margin: auto;
+    text-align:center;
+    padding-top: 100px;
+}
