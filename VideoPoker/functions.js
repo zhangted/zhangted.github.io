@@ -208,6 +208,7 @@ var FiveDrawPoker = (function() {
             this.betSlider.disabled = false;
             this.multiSlider.style.display = "";
             this.multiSlider.disabled = false;
+            this.multiSlider.max = 5;
             this.dealButton.style.display = "";
             document.getElementById('betColumn').style = "column-count: 2;";
             document.getElementById('multiColumn').style = "column-count: 2;";
@@ -221,9 +222,13 @@ var FiveDrawPoker = (function() {
                 this.resetButton.style.display = "";
             }
             this.betSlider.max = playerBalance / this.multiSlider.value;
+            if(this.player.balance < 5) {
+                this.multiSlider.max = this.player.balance;
+                this.multiSlider.value = 1;
+            }
             this.betSlider.value = parseInt(((+this.player.balance * .1)/ +this.multiSlider.value));
             if(this.betSlider.value == 0) {
-                this.betSlider.value = 1;
+                this.dealButton.disabled = true;
             }
             //Initial status
             this.balanceStatus.getElementsByTagName('span')[0].innerHTML = '$' + (+playerBalance);
@@ -444,6 +449,7 @@ var FiveDrawPoker = (function() {
                     return;
                 }
             }
+            this.patternStatus.innerHTML = "NO PATTERN";
             if(isFinal) {
                 this.resolveBalances(0, 0);
             }
