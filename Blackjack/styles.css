@@ -48,12 +48,12 @@ body {
 .card {
   font-family: 'Courier', serif;
   position: relative;
-  width: 3.6em;
-  height: 5em;
+  width: 3.54em;
+  height: 4.8em;
   border-radius: 5px;
   font-weight: bold;
   font-size: 1.65em;
-  padding:.2px;
+  padding:2px;
   background-color: #F6F7EB;
   display: flex;
   -webkit-box-shadow: 2px -2px 9px -1px rgba(0,0,0,1);
