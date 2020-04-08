@@ -222,11 +222,11 @@ var FiveDrawPoker = (function() {
                 this.multiStatus.style.display = "none";
                 this.resetButton.style.display = "";
             }
-            this.betSlider.max = playerBalance / this.multiSlider.value;
             if(this.player.balance < 5) {
                 this.multiSlider.max = this.player.balance;
                 this.multiSlider.value = 1;
             }
+            this.betSlider.max = playerBalance / this.multiSlider.value;
             this.betSlider.value = parseInt(((+this.player.balance * .1)/ +this.multiSlider.value));
             if(this.betSlider.value == 0) {
                 this.dealButton.disabled = true;
