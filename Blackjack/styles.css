@@ -11,6 +11,7 @@ body {
 #table {
   position: relative;
   padding-top: 20px;
+  min-height: 65vh;
 }
 
 #dealer{
@@ -23,7 +24,7 @@ body {
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-start;
-  height: 29vh;
+  height: 26vh;
   position: relative;
   width:100%;
 }
@@ -47,8 +48,8 @@ body {
 .card {
   font-family: 'Courier', serif;
   position: relative;
-  width: 95px;
-  height: 135px;
+  width: 3.6em;
+  height: 5em;
   border-radius: 5px;
   font-weight: bold;
   font-size: 1.65em;
@@ -122,9 +123,9 @@ body {
   text-align: center;
   border-top: 1px dashed #7e360d82;
   position: absolute;
-  bottom: 0;
-  height: 29vh;
-  width: 100%;
+  bottom:0;
+  height:30%;
+  width:100%;
   padding-top: 10px;
   background: #001104;
 }
