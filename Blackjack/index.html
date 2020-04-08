@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="reset.css">
     <link rel="stylesheet" href="styles.css">
   </head>
-  <body>
+  <body style = "overflow:hidden">
 
     <div id="table">
       <div id="dealer-score" class="score">Dealer total:   <span style = 'font-weight: bold;'>(Hidden)</span></div>
@@ -15,14 +15,18 @@
       </div>
 
       <div class="border-line"></div>
-
-      <div id="player-score" class="score" style="padding-top:10px;">Your total:   <span style = 'font-weight: bold;'>0</span></div>
+      <div id="player-score" class="score" style="padding-top:10px;">Your total:   
+        <span style = 'font-weight: bold;'>0</span>
+      </div>
       <div class="container" id="player">
+      </div>
+
+      <div style='padding-left:40px;'>
+        <button id="log" class="green2" type="button">View Game Log</button>
       </div>
     </div>
 
     <div id="panel">
-    
       <div id="dealing" class="status"></div>
       <div id="status" class="status"></div>
       <div id="balance" class="status"></div>
@@ -32,19 +36,28 @@
         <div id="bet" class="status"></div>
         <input type="range" min="0" max="100" value="1" class="slider" id="betSlider">
       </div>
-
-      <button id="deal" class="blue" type="button">BET</button>
-      <button id="continue" class="blue" type="button">CONTINUE</button>
-      <button id="nexthand" class= "blue" type="button">NEXT HAND</button>
-      <button id="reset" class="blue" type="button">RESET</button>
+      
+      <button id="deal" class="blue" type="button">Bet</button>
+      <button id="continue" class="blue" type="button">Continue</button>
+      <button id="nexthand" class= "blue" type="button">Next Hand</button>
+      <button id="reset" class="blue" type="button">Reset</button>
       <br />
-      <button id="hit" class="green" type="button">HIT</button>
-      <button id ="double" class ="green" type = "button">DOUBLE</button>
-      <button id ="split" class ="green" type = "button">SPLIT</button>
-      <button id="stay" class="green" type="button">STAY</button>
-
+      <button id="hit" class="green" type="button">Hit</button>
+      <button id ="double" class ="green" type = "button">Double</button>
+      <button id ="split" class ="green" type = "button">Split</button>
+      <button id="stay" class="green" type="button">Stay</button>
+      
     </div>
 
+    <div id="overlay" style="display: none;">
+      <div id="text">
+        Click anywhere to exit game log
+        <table id="logTable" class="logTable">
+          <tr style='font-weight:900; font-style: oblique'><td>Turn</td><td>Player Cards</td><td>Total</td><td>Dealer Cards</td><td>Total</td><td>Bet</td><td>Bust?</td><td>Ending Balance</td></tr>
+          <tr id='initRow'><td>0</td><td>None</td><td>None</td><td>None</td><td>None</td><td>None</td><td>No</td><td>100</td></tr>
+        </table>
+      </div>
+    </div>
 
     <script type="text/javascript" src="functions.js"></script>
     <script type="text/javascript">
