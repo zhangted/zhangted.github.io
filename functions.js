@@ -1,9 +1,10 @@
-var FiveDrawPoker = (function() {
+var Blackjack = (function() {
     class Card {
-        constructor(rank, suit) {
+        constructor(value, suit) {
+            this.value = value;
             this.suit = suit;
-            this.rank = rank;
-            this.hold = false;
+            this.rank = this.getRank();
+            this.faceUp = true;
         }
 
         view() {
@@ -13,28 +14,57 @@ var FiveDrawPoker = (function() {
                 'club' : '&clubs;',
                 'spade' : '&spades;'
             }
+            if(!this.faceUp) {
+                return `
+                    <div class = "card">
+                        <div class="back"></div>
+                    </div>
+                `;
+            }
             return `
-                <div class = 'top rank'>` + this.rank + `</div>
-                <div class = '`+ this.suit + ` suit' >` + suitsHTML[this.suit] + `</div>
-                <div class = 'bottom rank'>` + this.rank + `</div>
+                <div class = "card">
+                    <div class = "top rank">` + this.rank + `</div>
+                    <div class = "`+ this.suit + `" >` + suitsHTML[this.suit] + `</div>
+                    <div class = "bottom rank">` + this.rank + `</div>
+                </div>
             `;
         }
+
+        getRank() {
+            let res = "";
+            if (this.value == 1) {
+                res += "A";
+            }
+            else if(this.value == 11 || this.value == 12 || this.value == 13) {
+                res += "10";
+            }
+            else {
+                res += this.value.toString();
+            }
+            return res;
+        }
+
+        getValue() {
+            if(this.value == 11 || this.value == 12 || this.value == 13) {
+                return 10;
+            }
+            return this.value;
+        }
+
     }
 
     class Deck {
-        constructor() {
+        constructor(decksCount) {
             this.deck = new Array();
             this.usedCards = new Array();
-            for(let j = 1; j < 14; j++) {
-                let rank = j.toString();
-                if(j == 1) { rank = "A";}
-                if(j == 11) { rank = "J";}
-                if(j == 12) { rank = "Q";}
-                if(j == 13) { rank = "K";}
-                this.deck.push(new Card(rank, "diamond"));
-                this.deck.push(new Card(rank, "club"));
-                this.deck.push(new Card(rank, "heart"));
-                this.deck.push(new Card(rank, "spade"));
+            this.initialCount = 52 * decksCount;
+            for(let i = 0; i < decksCount; i++) {
+                for(let j = 1; j < 14; j++) {
+                    this.deck.push(new Card(j, "diamond"));
+                    this.deck.push(new Card(j, "club"));
+                    this.deck.push(new Card(j, "heart"));
+                    this.deck.push(new Card(j, "spade"));
+                }
             }
         }
 
@@ -54,500 +84,626 @@ var FiveDrawPoker = (function() {
         }
 
         init() {
-            for(let i = 0; i < this.usedCards.length; i++) {
-                this.deck.push(this.usedCards.pop());
+            if(this.deck.length >= parseInt(.8 * +this.initialCount)) {
+                this.resetDeck();
             }
             this.shuffle();
             this.shuffle();
             this.shuffle();
         }
 
+        resetDeck() {
+            for(let i = 0; i < this.usedCards.length; i++) {
+                let card = this.usedCards.pop();
+                card.faceUp = true;
+                this.deck.push(card);
+            }
+        }
+    }
+
+    class Dealer {
+        constructor() {
+            this.hand = new Hand();
+        }
+        getHand() {
+            return this.hand.hand;
+        }
     }
 
     class Player {
-        constructor(cardsView) {
-            this.balance = 20;
-            this.roundNumber = 0;
-            this.initialView = cardsView;
-            this.hand = new Hand(cardsView);
+        constructor() {
+            this.balance = 100;
+            this.hands = new Array();
+            this.hands.push(new Hand());
+            this.activeHand = 0;
         }
-        reset() {
-            this.hand = new Hand(this.initialView);
+        getHand() {
+            return this.hands[this.activeHand].hand;
+        }
+        nextHand() {
+            this.activeHand += 1;
         }
     }
 
     class Hand {
-        constructor(cardsView) {
-            this.cards = [null, null, null, null, null];
-            this.holds = [false, false, false, false, false];
-            this.cardsView = cardsView;
-            this.ranksMap = new Map([
-                ['A', 0], ['2', 0], ['3', 0], ['4', 0], ['5', 0],
-                ['6', 0], ['7', 0], ['8', 0], ['9', 0], ['10', 0], 
-                ['J', 0], ['Q', 0], ['K', 0]
-            ]);
-            this.suitsMap = new Map([
-                ['heart', 0], ['diamond', 0], ['club', 0], ['spade', 0]
-            ]);
+        constructor() {
+            this.hand = new Array();
+            this.total = 0;
+            this.bet = 0;
+            this.prevTotals = [];
+            this.complete = false;
+            this.options = new Map();
+            this.options.set("hit", false);
+            this.options.set("stay", false);
+            this.options.set("double", false);
+            this.options.set("split", false);
         }
 
-        changeCards(deck) {
-            for(let i = 0; i < this.holds.length; i++) {
-                if(this.holds[i] == false) {
-                    let drawnCard = deck.draw();
-                    this.ranksMap.set(drawnCard.rank, this.ranksMap.get(drawnCard.rank) + 1);
-                    this.suitsMap.set(drawnCard.suit, this.suitsMap.get(drawnCard.suit) + 1);
-                    if(this.cards[i] != null) {
-                        this.ranksMap.set(this.cards[i].rank, this.ranksMap.get(this.cards[i].rank) - 1);
-                        this.suitsMap.set(this.cards[i].suit, this.suitsMap.get(this.cards[i].suit) - 1);
+        add(card) {
+            this.hand.push(card);
+            this.refresh();
+        }
+
+        setBet(bet) {
+            this.bet = bet;
+        }
+
+        splittable() {
+            if(this.hand.length == 2) {
+                return this.hand[0].getValue() == this.hand[1].getValue();
+            }
+            return false;
+        }
+
+        printHand() {
+            var ret = "";
+            for(let i = 0; i < this.hand.length; i++) {
+                ret += "[" + this.hand[i].rank +"] "
+            }
+            return ret;
+        }
+
+        getTotal() {
+            let totals = new Array();
+            totals.push([0]);
+            for(let i = 0; i < this.hand.length; i++) {
+                const value = this.hand[i].getValue();
+                if(value != 1) {
+                    for(let j = 0; j < totals.length; j++) {
+                        totals[j] = parseInt(totals[j] + value);
                     }
-                    this.cards[i] = drawnCard;
-                    this.cardsView[i].innerHTML = drawnCard.view();
+                }
+                else {
+                    let newTotals = new Array();
+                    for(let j = 0; j < totals.length; j++) {
+                        newTotals.push(parseInt(totals[j] + 1));
+                        newTotals.push(parseInt(totals[j] + 11));
+                    }
+                    totals = newTotals;
                 }
             }
+            let mi = Number.MAX_VALUE;
+            let ma = Number.MIN_VALUE;
+            for(let i = 0; i < totals.length; i++) {
+                let curTotal = totals[i];
+                if(curTotal == 21) {
+                    return 21;
+                }
+                else {
+                    if(curTotal < 21 && curTotal < mi) {
+                        mi = curTotal;
+                    }
+                    if(curTotal < 21 && curTotal > ma) {
+                        ma = curTotal;
+                    }
+                    if(curTotal > 21) {
+                        return Math.max(Math.min(curTotal, ma), Math.min(curTotal, mi));
+                    }
+                }
+            }
+            if(ma < 21 || mi < 21) {
+                return ma;
+            }
         }
-        changeHold(cardNumber) {
-            this.holds[cardNumber-1] = !this.holds[cardNumber-1];
+
+        refresh() {
+            this.total = this.getTotal();
+            this.prevTotals.push(this.total);
+            if(this.total >= 21) {
+                this.options.set("hit", false);
+                this.options.set("stay", false);
+                this.options.set("double", false);
+                this.options.set("split", false);
+            }
+            else {
+                if(this.splittable()) {
+                    this.options.set("split", true);
+                }
+                else {
+                    this.options.set("split", false);
+                }
+                if(this.hand.length == 2) {
+                    this.options.set("double", true);
+                }
+                else {
+                    this.options.set("double", false);
+                }
+                this.options.set("hit", true);
+                this.options.set("stay", true);
+            }
         }
     }
 
     var Round = new function() {
-        this.sleep = (milliseconds) => { //this.sleep(delay).then(() => {     });
-             return new Promise(resolve => setTimeout(resolve, milliseconds));
-        }
-        this.setHoldButtons = function() {
-            this.holdButton1.addEventListener('click', this.hold1Handler.bind(this));
-            this.holdButton2.addEventListener('click', this.hold2Handler.bind(this));
-            this.holdButton3.addEventListener('click', this.hold3Handler.bind(this));
-            this.holdButton4.addEventListener('click', this.hold4Handler.bind(this));
-            this.holdButton5.addEventListener('click', this.hold5Handler.bind(this));
-        }
-        this.hold1Handler = function() {
-            this.player.hand.changeHold(1); 
-            if(this.card1[1].innerHTML.trim() == "") { 
-                this.card1[1].innerHTML = "<div class='hold'></div>";
-            } else { 
-                this.card1[1].innerHTML = ""; 
-            }
-        }        
-        this.hold2Handler = function() {
-            this.player.hand.changeHold(2); 
-            if(this.card2[1].innerHTML.trim() == "") { 
-                this.card2[1].innerHTML = "<div class='hold'></div>"; 
-            } else { 
-                this.card2[1].innerHTML = ""; 
-            }
-        }
-        this.hold3Handler = function() {
-            this.player.hand.changeHold(3); 
-            if(this.card3[1].innerHTML.trim() == "") { 
-                this.card3[1].innerHTML = "<div class='hold'></div>"; 
-            } else { 
-                this.card3[1].innerHTML = ""; 
-            }
-        }
-        this.hold4Handler = function() {
-            this.player.hand.changeHold(4); 
-            if(this.card4[1].innerHTML.trim() == "") { 
-                this.card4[1].innerHTML = "<div class='hold'></div>"; 
-            } else { 
-                this.card4[1].innerHTML = ""; 
-            }
-        }
-        this.hold5Handler = function() {
-            this.player.hand.changeHold(5); 
-            if(this.card5[1].innerHTML.trim() == "") { 
-                this.card5[1].innerHTML = "<div class='hold'></div>"; 
-            } else { 
-                this.card5[1].innerHTML = ""; 
-            }
-        }
-        this.resetHolds = function() {
-            this.player.reset();
-            this.card1[1].innerHTML = ""; 
-            this.card2[1].innerHTML = ""; 
-            this.card3[1].innerHTML = ""; 
-            this.card4[1].innerHTML = ""; 
-            this.card5[1].innerHTML = ""; 
-        }
-        this.enableHoldButtons = function(){
-            this.holdButton1.disabled = false;
-            this.holdButton2.disabled = false;
-            this.holdButton3.disabled = false;
-            this.holdButton4.disabled = false;
-            this.holdButton5.disabled = false;
-            this.holdButton1.style.display = "";
-            this.holdButton2.style.display = "";
-            this.holdButton3.style.display = "";
-            this.holdButton4.style.display = "";
-            this.holdButton5.style.display = "";
-        }
-        this.disableHoldButtons = function(){
-            this.holdButton1.style.display = "none";
-            this.holdButton2.style.display = "none";
-            this.holdButton3.style.display = "none";
-            this.holdButton4.style.display = "none";
-            this.holdButton5.style.display = "none";
-            this.holdButton1.disabled = true;
-            this.holdButton2.disabled = true;
-            this.holdButton3.disabled = true;
-            this.holdButton4.disabled = true;
-            this.holdButton5.disabled = true;
-        }
-        this.cardsBeforeStart = function() {
-            this.card1[0].innerHTML = "<div class='spade'>?</div>";
-            this.card2[0].innerHTML = "<div class='spade'>?</div>";
-            this.card3[0].innerHTML = "<div class='spade'>?</div>";
-            this.card4[0].innerHTML = "<div class='spade'>?</div>";
-            this.card5[0].innerHTML = "<div class='spade'>?</div>";
-        }
-        this.bettingIO = function() {
-            this.balanceStatus.style.display = "";
-            this.patternStatus.innerHTML = "";
-            this.betSlider.style.display = "";
-            this.betSlider.disabled = false;
-            this.multiSlider.style.display = "";
-            this.multiSlider.disabled = false;
-            this.multiSlider.max = 5;
-            this.dealButton.style.display = "";
-            this.dealButton.disabled = false;
-            document.getElementById('betColumn').style = "column-count: 2;";
-            document.getElementById('multiColumn').style = "column-count: 2;";
-            this.multiStatus.innerHTML = "MULTIPLIER: <span style='margin-left: 20px; color:yellow;'>1X</span>";
-            let playerBalance = this.player.balance;
-            if(this.player.balance == 0) {
-                this.hideBettingIO();
-                document.getElementById('status').innerHTML = "RAN OUT OF MONEY!";
-                this.betStatus.style.display = "none";
-                this.multiStatus.style.display = "none";
-                this.resetButton.style.display = "";
-            }
-            this.betSlider.max = playerBalance / this.multiSlider.value;
-            if(this.player.balance < 5) {
-                this.multiSlider.max = this.player.balance;
-                this.multiSlider.value = 1;
-            }
-            this.betSlider.value = parseInt(((+this.player.balance * .1)/ +this.multiSlider.value));
-            if(this.betSlider.value == 0) {
-                this.dealButton.disabled = true;
-            }
-            //Initial status
-            this.balanceStatus.getElementsByTagName('span')[0].innerHTML = '$' + (+playerBalance);
-            this.betStatus.getElementsByTagName('span')[0].innerHTML = '$' + this.betSlider.value;
-            this.multiStatus.getElementsByTagName('span')[0].innerHTML = this.multiSlider.value + 'X';
-            let multiplier = this.multiSlider.value;
-            for(let i = 0; i < 10; i++) {
-                document.getElementById('payoutTable').getElementsByTagName('tr')[i].getElementsByTagName('th')[this.lastMultiplier-1].style = "background-color: #cc1800";
-            }
-            //Changing status with input
-            this.dealButton.innerHTML = "BET $" + this.betSlider.value * this.multiSlider.value;
-            this.betSlider.oninput = function() { 
-                document.getElementById('bet').getElementsByTagName('span')[0].innerHTML = '$' + this.value;
-                if(this.value == 0) {
-                    document.getElementById('deal').disabled = true;
-                }
-                else {
-                    document.getElementById('deal').disabled = false;
-                }
-                document.getElementById('deal').innerHTML = "BET $" + (+this.value * +document.getElementById('multiSlider').value)
-            }
-            this.multiSlider.oninput = function() {
-                document.getElementById('betSlider').max = playerBalance / this.value;
-                document.getElementById('bet').getElementsByTagName('span')[0].innerHTML = '$' + document.getElementById('betSlider').value; 
-                document.getElementById('multiplier').getElementsByTagName('span')[0].innerHTML = this.value + 'X';
-                multiplier = this.value;
-                for(let i = 0; i < 10; i++) {
-                    for(let j = 0; j < 5; j++) {
-                        if(j == multiplier - 1) {
-                            document.getElementById('payoutTable').getElementsByTagName('tr')[i].getElementsByTagName('th')[j].style = "background-color: #cc1800";
-                        }
-                        else {
-                            document.getElementById('payoutTable').getElementsByTagName('tr')[i].getElementsByTagName('th')[j].style = "";
-                        }
-                    }
-                }
-                document.getElementById('deal').innerHTML = "BET $" + (+this.value * +document.getElementById('betSlider').value)
-            }
-        }
-        this.highlightRowCol = function(row, col) {
-            document.getElementById('payoutTable').getElementsByTagName('tr')[row].getElementsByTagName('th')[col].style = "background-color: #cc1800";
-            document.getElementById('payoutTable').getElementsByTagName('tr')[row].getElementsByTagName('td')[0].style = "background-color: #cc1800";
-            return parseInt(document.getElementById('payoutTable').getElementsByTagName('tr')[row].getElementsByTagName('th')[col].innerHTML);
-        }
-        this.clearHighlight = function() {
-            for(let i = 0; i < 10; i++) {
-                for(let j = 0; j < 5; j++) {
-                    document.getElementById('payoutTable').getElementsByTagName('tr')[i].getElementsByTagName('th')[j].style = "";
-                }
-                document.getElementById('payoutTable').getElementsByTagName('tr')[i].getElementsByTagName('td')[0].style = "";
-            }
-        }
-        this.hideBettingIO = function() {
-            this.multiSlider.disabled = true;
-            this.multiSlider.style.display = "none";
-            this.betSlider.disabled = true;
-            this.betSlider.style.display = "none";
-            document.getElementById('betColumn').style = "column-count: 1;";
-            document.getElementById('multiColumn').style = "column-count: 1;";
-            this.balanceStatus.style.display = "none";
-            this.dealButton.style.display = "none";
-        }
         this.dealButtonHandler = function() {
-            this.lastMultiplier = this.multiSlider.value;
-            this.player.balance -= parseInt(+this.multiSlider.value * +this.betSlider.value);
-            this.enableHoldButtons();
-            this.hideBettingIO();
+            this.currentRound += 1;
+            //Dealer score is hidden 
+            this.dealerScore = document.getElementById('dealer-score').getElementsByTagName("span")[0];
+            this.dealerScore.innerHTML = "(Hidden)";
+            //Hide bet slider/deal bttn
+            this.dealButton.style.display = "none";
+            this.betSlider.style.display = "none";
+            //Set up the bet and update player balance
+            this.player.hands[0].bet = this.betSlider.value;
+            this.player.balance -= this.betSlider.value;
+            //Shuffle deck
             this.deck.init();
-            this.player.hand.changeCards(this.deck);
-            this.player.roundNumber += 1;
-            this.confirmholdsButton.disabled = false;
-            this.confirmholdsButton.style.display = "";
-            document.getElementById('status').innerHTML = "SELECT WHICH CARDS TO HOLD";
-            this.identifyPatterns(false);
-        }
-        this.confirmholdsButtonHandler = function() {
-            document.getElementById('status').innerHTML = "";
-            this.player.hand.changeCards(this.deck);
-            this.player.roundNumber += 1;
-            if(this.player.roundNumber == 2) {
-                this.identifyPatterns(true);    
+            //Deal cards
+            if(this.dealer.getHand().length < 2) {
+                let card = this.deck.draw();
+                card.faceUp = false; //Dealer has one face down card
+                this.dealer.hand.add(card);
+            }
+            let playerCard = this.deck.draw();
+            playerCard.faceUp = true;
+            this.player.hands[0].add(playerCard);
+            if(this.dealer.getHand().length < 2) {
+                this.dealer.hand.add(this.deck.draw());
+            }
+            playerCard = this.deck.draw();
+            playerCard.faceUp = true;
+            this.player.hands[0].add(playerCard);
+
+            this.dealerIdx = 1;
+            //If dealer gets blackjack
+            if(this.dealer.hand.total == 21) {
+                this.finalTotals.push(this.player.hands[this.player.activeHand].total); //Finalize player's hand
+                this.refreshCards(); //Show cards
+                this.endTurn(); //Adjust balances
+            }
+            else { //Dealer total < 21, proceed with normal round
+                this.refreshCards(); //Show cards
+                this.refreshOptions(); //Display player's options with current hand
             }
         }
-        this.identifyPatterns = function(isFinal) {
-            if(isFinal) {
-                this.confirmholdsButton.disabled = true;
-                this.confirmholdsButton.style.display = "none";
-                this.disableHoldButtons();
+
+        this.refreshCards = function() {
+            let dealerCards = ""; 
+            let playerCards = "";
+            for(let i = 0; i < this.dealer.getHand().length; i++) {
+                dealerCards += this.dealer.getHand()[i].view(); //Add dealer's cards to output
             }
-            if(this.player.hand.suitsMap.get('diamond') == 5
-            || this.player.hand.suitsMap.get('club') == 5
-            || this.player.hand.suitsMap.get('heart') == 5
-            || this.player.hand.suitsMap.get('spade') == 5){
-                if(this.player.hand.ranksMap.get('10') == 1
-                && this.player.hand.ranksMap.get('J') == 1
-                && this.player.hand.ranksMap.get('Q') == 1
-                && this.player.hand.ranksMap.get('K') == 1
-                && this.player.hand.ranksMap.get('A') == 1){
-                    //5 of 1 suit and 10, J, Q, K, A
-                    this.patternStatus.innerHTML = "ROYAL FLUSH!";
-                    if(isFinal) {
-                        this.resolveBalances(1, this.multiSlider.value-1);
-                    }
-                    return;
-                }
-                else {
-                    let consecutive = 0;
-                    for(var i of this.player.hand.ranksMap.values()) {
-                        if(i == 1 && consecutive >= 0) {
-                            consecutive += 1;
-                            if(consecutive == 5) {
-                                //5 of 1 suit, and 5 consecutive ranks
-                                
-                                this.patternStatus.innerHTML = "STRAIGHT FLUSH!";
-                                if(isFinal) {
-                                    this.resolveBalances(2, this.multiSlider.value-1);
-                                }
-                                return;
-                            }
-                        }
-                        else {
-                            consecutive = 0;
-                        }
-                    }
-                    for(var i of this.player.hand.ranksMap.values()) {
-                        if(i == 4) {
-                            //5 of 1 suit, and 4 of 1 rank
-                            
-                            this.patternStatus.innerHTML = "FOUR OF A KIND";
-                            if(isFinal) {
-                                this.resolveBalances(3, this.multiSlider.value-1);
-                            }
-                            return;
-                        }
-                    }
-                    this.patternStatus.innerHTML = "FLUSH";
-                    if(isFinal) {
-                        //5 of 1 suit, NO 4 of 1 rank, NO 5 Consecutive rank
-                        this.resolveBalances(5, this.multiSlider.value-1);
-                    }
-                    return;
-                }
+            for(let i = 0; i < this.player.getHand().length; i++) {
+                playerCards += this.player.getHand()[i].view(); //Add player's active hand to output
             }
-            else { //Not 5 of 1 suit
-                for(var i of this.player.hand.ranksMap.values()) {
-                    if(i == 4) {
-                        //NOT 5 of 1 suit, and 4 of 1 rank
-                        this.patternStatus.innerHTML = "FOUR OF A KIND";
-                        if(isFinal) {
-                            this.resolveBalances(3, this.multiSlider.value - 1);
-                        }
-                        return;
-                    }
-                }
-                let tempMap = new Map([['2', 0], ['3', 0]]);
-                for(var i of this.player.hand.ranksMap.values()) {
-                    if(i == 2) {
-                        tempMap.set('2', tempMap.get('2') + 1);
-                    }
-                    if(i == 3) {
-                        tempMap.set('3', tempMap.get('3') + 1);
-                    }
-                }
-                if(tempMap.get('3') == 1 && tempMap.get('2') == 1) {
-                    //NOT 5 of 1 suit, 3 of 1 rank, 2 of 1 rank, 3 of 1 suit, 2 of 1 suit
-                    this.patternStatus.innerHTML = "FULL HOUSE";
-                    if(isFinal) {
-                        this.resolveBalances(4, this.multiSlider.value - 1);
-                    }
-                    return;
-                }
-                let consecutive = 0;
-                for(var i of this.player.hand.ranksMap.values()) {
-                    if(i == 1 && consecutive >= 0) {
-                        consecutive += 1;
-                        if(consecutive == 5) {
-                            //NOT 5 of 1 suit, and 5 consecutive ranks
-                            this.patternStatus.innerHTML = "STRAIGHT!";
-                            if(isFinal) {
-                                this.resolveBalances(6, this.multiSlider.value - 1);
-                            }
-                            return;
-                        }
-                    }
-                    else {
-                        consecutive = 0;
-                    }
-                }
-                let pairsCount = 0;
-                for(var i of this.player.hand.ranksMap.values()) {
-                    if(i == 3) {
-                        //NOT 5 of 1 suit, and 3 of 1 rank
-                        this.patternStatus.innerHTML = "THREE OF A KIND";
-                        if(isFinal) {
-                            this.resolveBalances(7, this.multiSlider.value - 1);
-                        }
-                        return;
-                    }
-                    if(i == 2) {
-                        pairsCount += 1;
-                    }
-                }
-                if(pairsCount == 2) {
-                    //NOT 5 of 1 SUIT, 2 of (2 of 1 rank)
-                    this.patternStatus.innerHTML = "TWO PAIR";
-                    if(isFinal) {
-                        this.resolveBalances(8, this.multiSlider.value - 1);
-                    }
-                    return;
-                }
-                if(this.player.hand.ranksMap.get('J') == 2
-                || this.player.hand.ranksMap.get('Q') == 2
-                || this.player.hand.ranksMap.get('K') == 2
-                || this.player.hand.ranksMap.get('A') == 2) {
-                    //PAIR OF J, Q, K, or A
-                    this.patternStatus.innerHTML = "JACKS OR BETTER (PAIR)";
-                    if(isFinal) {
-                        this.resolveBalances(9, this.multiSlider.value - 1);
-                    }
-                    return;
-                }
-            }
-            this.patternStatus.innerHTML = "NO PATTERN";
-            if(isFinal) {
-                this.resolveBalances(0, 0);
-            }
-            return;
-            
+            this.playerCards.innerHTML = playerCards;
+            this.dealerCards.innerHTML = dealerCards;
         }
-        this.resolveBalances = function(row, col) {
-            if(row > 0) {
-                this.clearHighlight();
-                let winMultiplier = this.highlightRowCol(row, col);
-                let winAmt = parseInt(+winMultiplier * +this.betSlider.value);
-                this.player.balance += winAmt;
-                this.multiStatus.innerHTML += "<br />WINNINGS PAYS <span style='color: #fffef5'>" + winMultiplier + 
-                                                "X BASE BET</span><br />YOU WON <span style='font-size: 40px; color:rgb(43, 236, 37)'>$" + winAmt + "</span>";
+
+        this.refreshOptions = function() {
+            if(this.player.hands.length > 1) { //If a split was made, tell the user which active hand is in play
+                this.gameStatus.innerHTML = "<span style='color:yellow'>Hand " + parseInt(this.player.activeHand + 1) + " of " + this.player.hands.length + "</span>";
             }
             else {
-                this.multiStatus.innerHTML += "<br />LOST <span style='font-size: 40px; color:rgb(255, 59, 59)'>$" + parseInt(+this.betSlider.value * +this.multiSlider.value) + "</span>";
+                this.gameStatus.innerHTML = ""; //Single hand, no need to label active hand
             }
-            this.continueButton.style.display = "";
+            this.options = this.player.hands[this.player.activeHand].options; //Get options map for player's active hand
+            if(!this.options.get("hit") && !this.options.get("stay") && !this.options.get("double") && !this.options.get("split")) {
+                this.endActiveHand(); //End active hand if total >= 21
+            }
+            if(this.options.get("hit")) {
+                this.hitButton.style.display = "";
+            }
+            else {
+                this.hitButton.style.display = "none";
+            }
+            if(this.options.get("stay")) {
+                this.stayButton.style.display = "";
+            }
+            else {
+                this.stayButton.style.display = "none";
+            }
+            if(this.options.get("split") && this.player.hands[this.player.activeHand].bet <= this.player.balance) { 
+                this.splitButton.style.display = "";
+            }
+            else {
+                this.splitButton.style.display = "none";
+            }
+            if(this.options.get("double") && this.player.hands[this.player.activeHand].bet <= this.player.balance) {
+                this.doubleButton.style.display = ""; //Show double option only if it is the 1st turn for the active hand and player has enough money
+            }
+            else {
+                this.doubleButton.style.display = "none";
+            }
+            this.refreshTotals(); //Update player total on GUI
         }
 
+        this.refreshTotals = function() {
+            this.playerScore = document.getElementById('player-score').getElementsByTagName("span")[0];
+            this.playerScore.innerHTML = this.player.hands[this.player.activeHand].total;
+        }
+
+        this.refreshEnd = function(i) {
+            this.playerScore = document.getElementById('player-score').getElementsByTagName("span")[0];
+            this.playerScore.innerHTML = this.player.hands[i].total;
+            this.dealerScore = document.getElementById('dealer-score').getElementsByTagName("span")[0];
+            this.dealerScore.innerHTML = this.dealer.hand.total;
+        }
+
+        this.refreshDealerScore = function() {
+            this.dealerScore = document.getElementById('dealer-score').getElementsByTagName("span")[0];
+            this.dealerScore.innerHTML =  this.dealer.hand.total;
+        }
+
+        this.endActiveHand = function() {
+            this.finalTotals.push(this.player.hands[this.player.activeHand].total); //Finalize player's active hand total
+            this.refreshTotals(); //Update GUI
+            this.refreshCards();
+            if(this.player.activeHand == this.player.hands.length-1) { //Last active hand
+                this.gameStatus.innerHTML = ""; 
+                this.endTurn();
+            }
+            else {//A split was done and there are still more active hands left to process
+                this.refreshCards(); //Update GUI
+                this.nexthandButton.style.display = ""; //Button that is pressed to proceed to next hand
+                this.hitButton.style.display = "none"; //Disable options
+                this.stayButton.style.display = "none";
+                this.doubleButton.style.display = "none";
+                this.splitButton.style.display = "none";
+            }
+        }
+
+        this.nexthandButtonHandler = function() {
+            this.nexthandButton.style.display = "none"; //Hide button after click
+            this.player.nextHand(); //Active hand index + 1
+            this.refreshCards(); //Update GUI
+            this.refreshOptions();
+        }
+
+        this.refreshDealerCards = function() {
+            this.dealerIdx += 1;
+            this.dealerCards.innerHTML += this.dealer.getHand()[this.dealerIdx].view(); //Update dealer's cards on GUI
+        }
+
+        this.refreshAllDealerCards = function() {
+            let dealerCards = "";
+            for(let i = 0; i < this.dealer.getHand().length; i++) {
+               dealerCards += this.dealer.getHand()[i].view(); //Update dealer's cards on GUI
+            }
+            this.dealerCards.innerHTML = dealerCards;
+        }
+
+        this.sleep = (milliseconds) => {
+            return new Promise(resolve => setTimeout(resolve, milliseconds));
+        }
+
+        this.endTurn = function() {
+            //Hide options
+            this.bust = false;
+            this.hitButton.style.display = "none";
+            this.stayButton.style.display = "none";
+            this.doubleButton.style.display = "none";
+            this.splitButton.style.display = "none";
+            this.dealingStatus.innerHTML = "<p style = 'font-size:21px; color:#ffffff;text-decoration: underline;padding-bottom:5px;padding-top:5px;'>Dealer must stand soft 17</p>";
+            if(this.player.hands.length == 1 && this.player.hands[0].total > 21) {
+                this.gameStatus.innerHTML = "Your hand is over 21. Bust! (<span style='color:#ff0000'> -$" + parseInt(+this.player.hands[0].bet) +" </span>)";
+                this.refreshBalance(); 
+                this.betStatus.innerHTML = "";
+                this.continueButton.style.display = "";
+                this.bust = true;
+            }
+            else {
+                this.dealer.getHand()[0].faceUp = true; //Turn dealer's first card faceUp
+                this.refreshAllDealerCards();
+                let delay = 1000;
+                while(this.dealer.hand.total < 17) { 
+                    this.dealer.hand.add(this.deck.draw());//Dealer has to hit until total is >= 17
+                    this.sleep(delay).then(() => {
+                        this.refreshDealerCards();
+                    });
+                    delay += 1000;
+                }      
+
+                this.sleep(delay).then(() => { 
+                    if(this.player.hands.length == 1) { //Single hand => update dealer and player scores
+                        this.refreshEnd(0);
+                    }
+                    else { //Multiple hands (split)
+                        this.playerScore.innerHTML = "--";
+                        this.gameStatus.innerHTML = "";
+                    }
+                    this.sleep(delay * .2).then(() => {
+                        this.displayResult(); //Resolve win/loss and balance changes for the player
+                        this.sleep(delay * .3).then(() => {
+                            this.refreshBalance(); //Update balance on GUI
+                            //Continue button (a pause for player to review their last bet/hands)
+                            this.continueButton.style.display = "";
+                        });
+                    });
+                });
+            }
+        }
+    
         this.continueButtonHandler = function() {
-            this.continueButton.style.display = "none";
-            this.resetHolds();
-            this.cardsBeforeStart();
-            this.clearHighlight();
-            this.bettingIO();
-            this.disableHoldButtons();
-            this.player.roundNumber = 0;
-        }
-        this.resetButtonHandler = function() {
-            document.getElementById('status').innerHTML = "";
-            this.resetButton.style.display = "none";
-            this.cardsView = [this.card1[0], this.card2[0], this.card3[0], this.card4[0], this.card5[0]];
-            this.player = new Player(this.cardsView);
-            this.betStatus.style.display = "";
-            this.multiStatus.style.display = "";
-            this.resetHolds();
-            this.cardsBeforeStart();
-            this.clearHighlight();
-            this.bettingIO();
-            this.disableHoldButtons();
-            this.player.roundNumber = 0;
+            document.body.scrollTop = 0;
+            document.documentElement.scrollTop = 0
+            document.body.style.overflow = "hidden";
+            var tableRows = document.getElementById('logTable');
+            if(!this.bust) {
+                for(let i = 0; i < this.player.hands.length; i++) {
+                    var hand = this.player.hands[i];
+                    tableRows.innerHTML += "<tr><td>"+this.currentRound+" </td><td> " + hand.printHand() + " </td><td> " + hand.getTotal() + " </td><td> " + this.dealer.hand.printHand() + 
+                    " </td><td>"+this.dealer.hand.getTotal()+"</td><td> $"+ hand.bet+" </td><td> No </td><td> "+this.player.balance+" </td></tr>";
+                }
+            }
+            else {
+                for(let i = 0; i < this.player.hands.length; i++) {
+                    var hand = this.player.hands[i];
+                    tableRows.innerHTML += "<tr><td>"+this.currentRound+" </td><td> " + hand.printHand() + " </td><td> " + hand.getTotal() + " </td><td> " + this.dealer.hand.printHand() + 
+                    " </td><td>"+this.dealer.hand.getTotal()+"</td><td> $"+ hand.bet+" </td><td> Yes </td><td> "+this.player.balance+" </td></tr>";
+                }
+            }
+            this.gameStatus.innerHTML = ""; //reset game status output
+            //Reset player/dealer hands 
+            this.dealer.hand = new Hand(); 
+            this.player.hands = new Array();
+            this.player.hands.push(new Hand());
+            this.player.activeHand = 0;
+            this.finalTotals = new Array();
+            this.continueButton.style.display = "none"; //hide pressed button
+            //Reset cards on screen
+            this.dealerCards.innerHTML = "";
+            this.playerCards.innerHTML = "";
+            //Reset scores on screen
+            this.dealerScore.innerHTML = "(Hidden)";
+            this.playerScore.innerHTML = "0";
+
+            this.dealingStatus.innerHTML = "";
+
+            if(this.player.balance > 0) { //Player still has money
+                this.dealButton.style.display = ""; //Show buttons/sliders that allow betting/dealing
+                this.betSlider.style.display = "";
+                this.refreshBalanceBets();
+            }
+            else { //Player has $0
+                this.gameOver();
+            }
         }
 
-        this.init = function() { //Init variable
-            //Cards 1-5
-            this.card1 = document.getElementById('card1').getElementsByTagName('span');
-            this.card2 = document.getElementById('card2').getElementsByTagName('span');
-            this.card3 = document.getElementById('card3').getElementsByTagName('span');
-            this.card4 = document.getElementById('card4').getElementsByTagName('span');
-            this.card5 = document.getElementById('card5').getElementsByTagName('span');
-            this.cardsView = [this.card1[0], this.card2[0], this.card3[0], this.card4[0], this.card5[0]];
-            this.card1[1].innerHTML == "";
-            this.card2[1].innerHTML == "";
-            this.card3[1].innerHTML == "";
-            this.card4[1].innerHTML == "";
-            this.card5[1].innerHTML == "";
-            this.player = new Player(this.cardsView); //Player
-            this.deck = new Deck();
-            //Cards 1-5 Hold Buttons
-            this.holdButton1 = document.getElementById('hold1');
-            this.holdButton2 = document.getElementById('hold2');
-            this.holdButton3 = document.getElementById('hold3');
-            this.holdButton4 = document.getElementById('hold4');
-            this.holdButton5 = document.getElementById('hold5');
-            this.setHoldButtons();
+        this.displayResult = function() {
+            let dealerTotal = this.dealer.hand.total;
+            this.dealerScore.innerHTML = dealerTotal;
+            if(this.finalTotals.length > 1) {
+                document.body.style.overflow = "visible";
+            }
+
+            for(let i = 0; i < this.finalTotals.length; i++) {
+                let playerHand = this.player.hands[i];
+                let playerTotal = this.finalTotals[i];
+                if(playerTotal > dealerTotal && playerTotal < 21) {
+                    if(this.finalTotals.length > 1) {
+                        this.gameStatus.innerHTML += "<span style='color:yellow'>Hand " + parseInt(i+1) + ":</span> Your total is higher. You won! (<span style='color:#32CD32'> +$" + parseInt(+playerHand.bet) +"</span> )<br />";
+                    }
+                    else {
+                        this.gameStatus.innerHTML = "Your total is higher. You won! (<span style='color:#32CD32'> +$" + parseInt(+playerHand.bet) +" </span>)";
+                    }
+                    this.player.balance = parseInt(+this.player.balance + +playerHand.bet * 2);
+                }
+                else if(playerTotal == dealerTotal && playerTotal <= 21) {
+                    if(this.finalTotals.length > 1) {
+                        this.gameStatus.innerHTML += "<span style='color:yellow'>Hand " + parseInt(i+1) + ":</span> Push! (<span style='color:#32CD32'> +$0</span> )<br />";
+                    }
+                    else {
+                        this.gameStatus.innerHTML = "Push! (<span style='color:#32CD32'> +$0</span> )";
+                    }
+                    this.player.balance = parseInt(+this.player.balance + +playerHand.bet);
+                }
+                else if(playerTotal > 21) {
+                    if(this.finalTotals.length > 1) {
+                        this.gameStatus.innerHTML += "<span style='color:yellow'>Hand " + parseInt(i+1) + ":</span> Your total is over 21. You bust! (<span style='color:#ff0000'> -$" + playerHand.bet + "</span> )<br />";
+                    }
+                    else {
+                        this.gameStatus.innerHTML = "Your total is over 21. You bust! (<span style='color:#ff0000'> -$"+ playerHand.bet + "</span> )";
+                    }
+                }
+                else if(playerTotal == 21) {
+                    if(this.finalTotals.length > 1) {
+                        this.gameStatus.innerHTML += "<span style='color:yellow'>Hand " + parseInt(i+1) + ":</span> Blackjack! (<span style='color:#32CD32'> +$"+ parseInt(+playerHand.bet * 1.5) +"</span> )<br />";
+                    }
+                    else {
+                        this.gameStatus.innerHTML = "Blackjack! (<span style='color:#32CD32'> +$"+ parseInt(+playerHand.bet * 1.5) +"</span> )";
+                    }
+                    this.player.balance = parseInt(+this.player.balance + +playerHand.bet * 2.5); //Blackjack pays 1.5 to 1
+                }
+                else {
+                    if(dealerTotal > 21 && playerTotal <= 21) {
+                        if(this.finalTotals.length > 1) {
+                            this.gameStatus.innerHTML += "<span style='color:yellow'>Hand " + parseInt(i+1) + ":</span> Dealer went over 21. Dealer busts! (<span style='color:#32CD32'> +$"+ (+playerHand.bet) +"</span> )<br />";
+                        }
+                        else {
+                            this.gameStatus.innerHTML = "Dealer went over 21. Dealer busts! (<span style='color:#32CD32'> +$"+ (+playerHand.bet) +" </span>)";
+                        }
+                        this.player.balance = parseInt(+this.player.balance + +playerHand.bet * 2);
+                    }
+                    else {
+                        if(dealerTotal == 21) {
+                            if(this.finalTotals.length > 1) {
+                                this.gameStatus.innerHTML += "<span style='color:yellow'>Hand " + parseInt(i+1) + ":</span> Dealer has blackjack.. (<span style='color:#ff0000'> -$"+ (+playerHand.bet) +"</span> )<br />";
+                            }
+                            else {
+                                this.gameStatus.innerHTML = "Dealer has blackjack.. (<span style='color:red'>- $"+ (+playerHand.bet) +"</span>)";
+                            }
+                        }
+                        else {
+                            if(this.finalTotals.length > 1) {
+                                this.gameStatus.innerHTML += "<span style='color:yellow'>Hand " + parseInt(i+1) + ":</span> Dealer high. You lost! (<span style='color:#ff0000'> -$"+ (+playerHand.bet) +"</span> )<br />";
+                            }
+                            else {
+                                this.gameStatus.innerHTML = "Dealer high. You lost! (<span style='color:#ff0000'> -$"+ (+playerHand.bet) +"</span> )";
+                            }
+                        }
+                    }
+                }
+            }
+            this.betStatus.innerHTML = "";
+        }
+
+        this.hitButtonHandler = function() {
+            this.player.hands[this.player.activeHand].add(this.deck.draw());
+            this.refreshCards();
+            this.refreshOptions();
+        }
+
+        this.doubleButtonHandler = function() {
+            this.player.balance -= this.player.hands[this.player.activeHand].bet;
+            this.player.hands[this.player.activeHand].bet *= 2;
+            this.player.hands[this.player.activeHand].add(this.deck.draw());
+            this.refreshCards();
+            this.endActiveHand();
+        }
+
+        this.stayButtonHandler = function() {
+            this.endActiveHand();
+        }
+        
+        this.splitButtonHandler = function() {
+            let newHand = new Hand();
+            let splitCard = this.player.getHand().pop();
+            this.player.hands[this.player.activeHand].add(this.deck.draw());
+            newHand.add(splitCard);
+            newHand.add(this.deck.draw());
+            newHand.bet = this.player.hands[this.player.activeHand].bet;
+            this.player.balance -= newHand.bet;
+            this.player.hands.push(newHand);
+            this.refreshCards();
+            this.refreshOptions();
+        }
+
+        this.gameOver = function() {
+            this.gameStatus.innerHTML = "Game over! You ran out of $$.";
+            this.balanceStatus.style.display = "none";
+            this.betSlider.style.display = "none";
+            this.betStatus.style.display = "none";
+            this.resetButton.style.display = "";
+
+        }
+
+        this.resetButtonHandler = function() {
+            this.dealer = new Dealer();
+            this.player = new Player();
+            this.deck = new Deck(5);
+            this.finalTotals = new Array();
+            this.refreshBalanceBets();
+            this.hitButton.style.display = "none";
+            this.doubleButton.style.display = "none";
+            this.stayButton.style.display = "none";
+            this.splitButton.style.display = "none";
+            this.continueButton.style.display = "none";
+            this.nexthandButton.style.display = "none";
+            this.resetButton.style.display = "none";
+            this.gameStatus.innerHTML = "";
+        }
+
+
+        this.refreshBalanceBets = function() {
+            this.balanceStatus.style.display = "";
+            this.betSlider.style.display = "";
+            this.betStatus.style.display = "";
+            this.dealButton.style.display = "";
+            this.betSlider.max = this.player.balance;
+            this.betSlider.value = parseInt(this.player.balance * .1);
+            if(this.player.balance <= 10 && this.player.balance > 0) {
+                this.betSlider.value = 1;
+            }
+            var playerBalance = this.player.balance;
+            this.balanceStatus.innerHTML = "Your Balance: <span style='color:#32CD32'>$" + (playerBalance) + "</span>";
+            this.betStatus.innerHTML = "Bet: <span style='color:#32CD32'>$" + this.betSlider.value + "</span>";
+            this.betSlider.oninput = function() {
+                if(this.value > 0) {
+                    document.getElementById('deal').disabled = false
+                }
+                else {
+                    document.getElementById('deal').disabled = true;
+                }
+                document.getElementById('bet').innerHTML = "Bet: <span style='color:#32CD32'>$" + this.value + "</span>";
+            }
+        }
+
+        this.refreshBalance = function() {
+            this.balanceStatus.innerHTML = "Your Balance: <span style='color:#32CD32'>$" + this.player.balance + "</span>";
+        }
+
+        this.logButtonHandler = function() { 
+            if(document.getElementById('overlay').style.display == "none") {
+                document.getElementById('overlay').style.display = "block";
+            }
+        }
+
+        this.logStatusHandler = function() {
+            document.getElementById('overlay').style.display = "none";
+        }
+
+        this.init = function() { //Init variables
+            this.currentRound = 0;
+            this.dealer = new Dealer(); //Dealer
+            this.player = new Player(); //Player
+            this.deck = new Deck(5); //Deck
+            this.finalTotals = new Array(); //Final totals of player's hands
+
             //Buttons
             this.dealButton = document.getElementById('deal');
+            this.hitButton = document.getElementById('hit');
+            this.doubleButton = document.getElementById('double');
+            this.stayButton = document.getElementById('stay');
+            this.splitButton = document.getElementById('split');
             this.continueButton = document.getElementById('continue');
-            this.confirmholdsButton = document.getElementById('confirmholds');
+            this.nexthandButton = document.getElementById('nexthand');
             this.resetButton = document.getElementById('reset');
+            this.logButton = document.getElementById('log');
+            //Card outputs
+            this.playerCards = document.getElementById('player');
+            this.dealerCards = document.getElementById('dealer');
             //Text outputs
-            this.patternStatus = document.getElementById('patternStatus');
+            this.gameStatus = document.getElementById('status');
             this.balanceStatus = document.getElementById('balance');
             this.betStatus = document.getElementById('bet');
-            this.multiStatus = document.getElementById('multiplier');
-            this.lastMultiplier = 1;
+            this.dealingStatus = document.getElementById('dealing');
+            this.logStatus = document.getElementById('overlay');
             //Bet slider
             this.betSlider = document.getElementById('betSlider');
-            this.multiSlider = document.getElementById('multiSlider');
-
-            this.bettingIO();
-            this.disableHoldButtons();
-            this.cardsBeforeStart();
             
+            //Bet slider changes balance/bet outputs
+            this.refreshBalanceBets();
+
             //Buttons <-> functions
 			this.dealButton.addEventListener('click', this.dealButtonHandler.bind(this));
+            this.hitButton.addEventListener('click', this.hitButtonHandler.bind(this));
+            this.doubleButton.addEventListener('click', this.doubleButtonHandler.bind(this));
+            this.stayButton.addEventListener('click', this.stayButtonHandler.bind(this));
+            this.splitButton.addEventListener('click', this.splitButtonHandler.bind(this));
             this.continueButton.addEventListener('click', this.continueButtonHandler.bind(this));
-            this.confirmholdsButton.addEventListener('click', this.confirmholdsButtonHandler.bind(this));
+            this.nexthandButton.addEventListener('click', this.nexthandButtonHandler.bind(this));
             this.resetButton.addEventListener('click', this.resetButtonHandler.bind(this));
+            this.logButton.addEventListener('click', this.logButtonHandler.bind(this));
+            this.logStatus.addEventListener('click', this.logStatusHandler.bind(this));
 
             //Hide unused buttons for betting phase
+            this.hitButton.style.display = "none";
+            this.doubleButton.style.display = "none";
+            this.stayButton.style.display = "none";
+            this.splitButton.style.display = "none";
             this.continueButton.style.display = "none";
-            this.confirmholdsButton.style.display = "none";
+            this.nexthandButton.style.display = "none";
             this.resetButton.style.display = "none";
         }
     } 
