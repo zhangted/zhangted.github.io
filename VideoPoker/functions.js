@@ -82,9 +82,9 @@ var FiveDrawPoker = (function() {
             this.holds = [false, false, false, false, false];
             this.cardsView = cardsView;
             this.ranksMap = new Map([
-                ['A', 0], ['2', 0], ['3', 0], ['4', 0], ['5', 0],
+                ['2', 0], ['3', 0], ['4', 0], ['5', 0],
                 ['6', 0], ['7', 0], ['8', 0], ['9', 0], ['10', 0], 
-                ['J', 0], ['Q', 0], ['K', 0]
+                ['J', 0], ['Q', 0], ['K', 0], ['A', 0]
             ]);
             this.suitsMap = new Map([
                 ['heart', 0], ['diamond', 0], ['club', 0], ['spade', 0]
@@ -210,13 +210,14 @@ var FiveDrawPoker = (function() {
             this.multiSlider.disabled = false;
             this.multiSlider.max = 5;
             this.dealButton.style.display = "";
+            this.dealButton.disabled = false;
             document.getElementById('betColumn').style = "column-count: 2;";
             document.getElementById('multiColumn').style = "column-count: 2;";
             this.multiStatus.innerHTML = "MULTIPLIER: <span style='margin-left: 20px; color:yellow;'>1X</span>";
             let playerBalance = this.player.balance;
             if(this.player.balance == 0) {
                 this.hideBettingIO();
-                document.getElementById('status').innerHTML = "RAN OUT OF MONEY!";
+                document.getElementById('status').innerHTML = "GAME OVER! RAN OUT OF MONEY!";
                 this.betStatus.style.display = "none";
                 this.multiStatus.style.display = "none";
                 this.resetButton.style.display = "";
@@ -239,6 +240,7 @@ var FiveDrawPoker = (function() {
                 document.getElementById('payoutTable').getElementsByTagName('tr')[i].getElementsByTagName('th')[this.lastMultiplier-1].style = "background-color: #cc1800";
             }
             //Changing status with input
+            this.dealButton.innerHTML = "BET $" + this.betSlider.value * this.multiSlider.value;
             this.betSlider.oninput = function() { 
                 document.getElementById('bet').getElementsByTagName('span')[0].innerHTML = '$' + this.value;
                 if(this.value == 0) {
@@ -247,7 +249,7 @@ var FiveDrawPoker = (function() {
                 else {
                     document.getElementById('deal').disabled = false;
                 }
-                
+                document.getElementById('deal').innerHTML = "BET $" + (+this.value * +document.getElementById('multiSlider').value)
             }
             this.multiSlider.oninput = function() {
                 document.getElementById('betSlider').max = playerBalance / this.value;
@@ -264,6 +266,7 @@ var FiveDrawPoker = (function() {
                         }
                     }
                 }
+                document.getElementById('deal').innerHTML = "BET $" + (+this.value * +document.getElementById('betSlider').value)
             }
         }
         this.highlightRowCol = function(row, col) {
