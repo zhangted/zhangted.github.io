@@ -123,8 +123,8 @@ body {
   text-align: center;
   border-top: 1px dashed #7e360d82;
   position: absolute;
-  bottom:0;
-  height:30%;
+  height:100%;
+  max-height: 120%;
   width:100%;
   padding-top: 10px;
   background: #001104;
