@@ -84,7 +84,7 @@ var Blackjack = (function() {
         }
 
         init() {
-            if(this.deck.length >= .8 * this.initialCount) {
+            if(this.deck.length >= parseInt(.8 * +this.initialCount)) {
                 this.resetDeck();
             }
             this.shuffle();
@@ -94,7 +94,9 @@ var Blackjack = (function() {
 
         resetDeck() {
             for(let i = 0; i < this.usedCards.length; i++) {
-                this.deck.push(this.usedCards.pop());
+                let card = this.usedCards.pop();
+                card.faceUp = true;
+                this.deck.push(card);
             }
         }
     }
