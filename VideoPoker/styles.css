@@ -56,7 +56,7 @@ body {
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  height: 180px;
+  height: 29vh;
   position: relative;
   width:100%;
 }
@@ -154,13 +154,13 @@ body {
 /* footer */
 #panel {
   text-align: center;
-  background-color: rgba(5, 19, 71, 0.705);
-  border-top: 1px solid #f5f0f0;
+  background-color: rgba(5, 19, 71, 1);
   position: absolute;
-  bottom: 0;
-  width: 100%;
+  justify-content:center;
+  height:50%;
+  max-height: 100%;
+  width:100%;
   padding-top: 10px;
-  height: 30%;
 }
 
 .status {
@@ -350,7 +350,8 @@ button:disabled:active {
   color: #c6e5fd;
   position: relative;
   opacity: 0.7;
-  padding-top: 2px;
+  padding-top: 10px;
+  padding-bottom: 5px;
   font-size: 35px;
   animation:blinkingText 1.2s infinite;
   text-align:center;
