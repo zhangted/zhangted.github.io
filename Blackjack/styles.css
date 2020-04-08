@@ -102,7 +102,7 @@ body {
 }
 
 .border-line {
-  border:3.3px dashed rgb(223, 214, 167);
+  border:3px dashed rgb(223, 214, 167);
   opacity: .4;
 }
 
