@@ -121,10 +121,10 @@ body {
 /* footer */
 #panel {
   text-align: center;
-  border-top: 1px dashed #7e360d82;
+  border-top: 1px solid #003a0882;
   position: absolute;
   height:100%;
-  max-height: 120%;
+  max-height: 100%;
   width:100%;
   padding-top: 10px;
   background: #001104;
