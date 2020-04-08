@@ -645,7 +645,7 @@ var Blackjack = (function() {
 
         this.logButtonHandler = function() { 
             if(document.getElementById('overlay').style.display == "none") {
-                document.getElementById('overlay').style.display = "block";
+                document.getElementById('overlay').style.display = "";
             }
         }
 
@@ -705,6 +705,7 @@ var Blackjack = (function() {
             this.continueButton.style.display = "none";
             this.nexthandButton.style.display = "none";
             this.resetButton.style.display = "none";
+            document.getElementById("overlay").style.display = "none";
         }
     } 
 
