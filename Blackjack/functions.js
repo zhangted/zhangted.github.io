@@ -705,7 +705,8 @@ var Blackjack = (function() {
             this.continueButton.style.display = "none";
             this.nexthandButton.style.display = "none";
             this.resetButton.style.display = "none";
-            document.getElementById("overlay").style.display = "none";
+            
+            this.logStatus.style.display = "none";
         }
     } 
 
