@@ -9,12 +9,14 @@ var CardSorter = (function() {
                 }
             }
         }
-        shuffle() {
-            for(let i = 0; i < this.deck.length; i++) {
-                const j = Math.floor(Math.random() * i);
-                const temp = this.deck[i];
-                this.deck[i] = this.deck[j];
-                this.deck[j] = temp;
+        shuffle(times) {
+            for(let shufflecnt = 0; shufflecnt < times; shufflecnt++) {
+                for(let i = 0; i < this.deck.length; i++) {
+                    const j = Math.floor(Math.random() * i);
+                    const temp = this.deck[i];
+                    this.deck[i] = this.deck[j];
+                    this.deck[j] = temp;
+                }
             }
         }
         printContents(id, eles) {
@@ -30,8 +32,10 @@ var CardSorter = (function() {
     var CardSorter = new function() {
         this.cardSliderHandler = function(deck) {
             let generateEmptyCards = this.generateEmptyCards;
+            let fillEmptyCards = this.fillEmptyCards;
             this.cardSlider.oninput = function() {
                 generateEmptyCards(this.value);
+                fillEmptyCards(deck);
                 deck.printContents('test', this.value);
             }
         }
@@ -83,9 +87,17 @@ var CardSorter = (function() {
                 else if(rank == 14){
                     rank = "A";
                 }
-                
                 document.getElementById('rank'+i).innerHTML = "<div class='top rank'>" + rank.toString() + "</div><div class='" + suitClass +"'>"+ suitASCII +"</div><div class='bottom rank'>"+ rank.toString() +"</div>";
             }
+        }
+        this.newCardsButtonHandler = function() {
+            this.deck = new Deck(7);
+            this.deck.shuffle(2);
+            this.generateEmptyCards(this.cardSlider.value);
+            this.fillEmptyCards(this.deck);
+        }
+        this.sortButtonHandler = function() {
+
         }
 
 
@@ -93,11 +105,17 @@ var CardSorter = (function() {
             this.deck = new Deck(7);
             this.cardSlider = document.getElementById('cardSlider');
 
-            this.deck.shuffle();
+            this.deck.shuffle(2);
             this.deck.printContents('test', this.cardSlider.value);
             this.generateEmptyCards(this.cardSlider.value);
             this.cardSliderHandler(this.deck);
             this.fillEmptyCards(this.deck);
+
+            this.newCardsButton = document.getElementById('newBtn');
+            this.newCardsButton.addEventListener('click', this.newCardsButtonHandler.bind(this));
+
+            this.sortButton = document.getElementById('sortBtn');
+            this.sortButton.addEventListener('click', this.sortButtonHandler.bind(this));
         }
     }
     
