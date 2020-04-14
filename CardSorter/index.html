@@ -13,26 +13,32 @@
         <table class="columns">
           <tr>
             <td class="column">
-              <button class="newbtn">Get New Cards</p>
+              <button id="newBtn" class="newBtn">Refresh</p>
             </td>
 
             <td id="slidecontainer" class="column">
               <div class="text"># of Cards:</div>
               <input type="range" min="1" max="19" value="7" class="slider" id="cardSlider">
             </td>
+
+            <td id="slidecontainer" class="column">
+              <div class="text">Sorting speed:</div>
+              <input type="range" min="-500" max="0" value="-50" class="slider" id="speedSlider">
+            </td>
             
             <td class="column">
               <div class="dropdown">
-                <button class="dropbtn"> Algorithm	&#x25BC;</button>
+                <button id="selectedAlgo" class="dropbtn"> Algorithm	&#x25BC;</button>
                 <div class="dropdown-content">
-                  <a href="">Bubble Sort</a>
-                  <a href="#">Merge Sort</a>
-                  <a href="#">Quick Sort</a>
+                  <div id="bubbleSort" style="cursor:pointer;">Bubble Sort</div>
+                  <div id="mergeSort" style="cursor:pointer;">Merge Sort</div>
+                  <div id="quickSort" style="cursor:pointer;"><s>Quick Sort</s></div>
+                  <div id="heapSort" style="cursor:pointer;"><s>Heap Sort</s></div>
               </div>
             </td>
 
             <td class="column">
-            <button class="sortBtn">Sort!</button>
+            <button id="sortBtn" class="sortBtn">Sort!</button>
             </td>
 
           </tr>

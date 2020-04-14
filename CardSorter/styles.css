@@ -26,13 +26,16 @@ body {
     border-radius: 2px;
 }
 .sortBtn:hover{
-    background-color: #ffffff;
+    background-color: #fff562;
+}
+.sortBtn:disabled{
+    background-color: #838383;
 }
 button {
   font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
   font-size: 1.1em;
 }
-.newbtn {
+.newBtn {
   background-color: rgba(62, 115, 161, 0.78);
   color: rgb(255, 255, 255);
   padding-top:10px;
@@ -40,7 +43,10 @@ button {
   margin-top: 22px;
   border: none;
   border-radius: 2px;
-  width:144px;
+  width:120px;
+}
+.newBtn:disabled {
+  background-color: #838383;
 }
 /* Dropdown Button */
 .dropbtn {
@@ -67,7 +73,7 @@ button {
     z-index: 1;
 }
   /* Links inside the dropdown */
-.dropdown-content a {
+.dropdown-content div {
     color: black;
     padding: 12px 16px;
     text-decoration: none;
@@ -107,20 +113,65 @@ button {
     font-size: 1em;
     background-color: #F6F7EB;
     display: flex;
-    -webkit-box-shadow: 2px -2px 9px -1px rgba(0,0,0,1);
+    -webkit-box-shadow: 2px -1px 9px -1px rgba(0,0,0,1);
     -moz-box-shadow: 2px -2px 9px -1px rgba(0,0,0,1);
-    box-shadow: 2px -2px 9px -1px rgba(0,0,0,1);
-    margin:2px;
+    box-shadow: 2px 1 9px -1px rgba(0,0,0,1);
+    margin: 2px;
+}
+.cardYellow {
+  font-family: 'Courier', serif;
+  width: 2.5em;
+  height: 3.6em;
+  border-radius: 5px;
+  font-weight: bold;
+  font-size: 1em;
+  background-color: rgb(255, 179, 0);
+  display: flex;
+  margin: 2px;
+  position:relative;
+  border-radius: 5px;
+  opacity: 100%;
+  z-index: 5;
+}
+.cardGreen {
+  font-family: 'Courier', serif;
+  width: 2.5em;
+  height: 3.6em;
+  border-radius: 5px;
+  font-weight: bold;
+  font-size: 1em;
+  background-color: rgb(83, 245, 124);
+  display: flex;
+  margin: 2px;
+  position:relative;
+  border-radius: 5px;
+  opacity: 100%;
+  z-index: 5;
+}
+.cardBlue {
+  font-family: 'Courier', serif;
+  width: 2.5em;
+  height: 3.6em;
+  border-radius: 5px;
+  font-weight: bold;
+  font-size: 1em;
+  background-color: #EDC9AF;
+  display: flex;
+  margin: 2px;
+  position:relative;
+  border-radius: 5px;
+  opacity: 100%;
+  z-index: 5;
 }
 .diamond, .heart {
     color:#E94F37;
     margin:auto;
-    font-size: 3em;
+    font-size: 2.7em;
 }
 .spade, .club {
     color:#393E41;
     margin:auto;
-    font-size: 3em;
+    font-size: 2.7em;
 } 
 .suit {
     position: absolute;
@@ -135,7 +186,7 @@ button {
     height:12px;
 }
 .top {
-    top: 2px;
+    top: 1px;
     left: 2px;
 }
 .bottom {
@@ -154,9 +205,12 @@ button {
   .slider {
     margin: center;
   }
+  .slider:disabled {
+    background-color: #838383;
+  }
   input[type=range] {
     -webkit-appearance: none;
-    width: 160px;
+    width: 120px;
     margin: 7.3px 0;
   }
   input[type=range]:focus {
@@ -257,8 +311,8 @@ button {
 
 td.column {
   border-right: 2px  inset  rgb(150, 190, 171);
-
   border-left: 2px  inset  rgb(150, 190, 171);
   padding-right:20px;
   padding-left: 20px;
 }
+
