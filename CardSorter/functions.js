@@ -103,16 +103,16 @@ var CardSorter = (function() {
             this.newCardsButton.disabled = true;
             this.cardSlider.disabled = true;
             this.speedSlider.disabled = true;
-            let algorithm = document.getElementById('selectedAlgo').innerHTML;
+            let algorithm = document.getElementById('selectedAlgo').getElementsByTagName('dummy')[0].innerHTML;
             if(algorithm == "Bubble Sort") {
                 await this.bubbleSort(this.deck);
             }
             else if(algorithm == "Merge Sort") {
-                this.cero = 0;
                 this.mergeSortMid = Math.floor((this.cardSlider.value*17 - 1 )/ 2);
-                await this.mergeSort(this.deck.deck, 0, this.cardSlider.value*17 - 1);
+                await this.mergeSort(this.deck.deck, 0, this.cardSlider.value * 17 - 1);
             }
             else if(algorithm == "Quick Sort") {
+                await this.quickSort(this.deck.deck, 0, this.cardSlider.value * 17 - 1);
             }
             else if(algorithm == "Heap Sort") {
             }
@@ -122,16 +122,16 @@ var CardSorter = (function() {
             this.speedSlider.disabled = false;
         }
         this.bubbleSortSelectHandler = function() {
-            document.getElementById('selectedAlgo').innerHTML = "Bubble Sort";
+            document.getElementById('selectedAlgo').getElementsByTagName('dummy')[0].innerHTML = "Bubble Sort";
         }
         this.mergeSortSelectHandler = function() {
-            document.getElementById('selectedAlgo').innerHTML = "Merge Sort";
+            document.getElementById('selectedAlgo').getElementsByTagName('dummy')[0].innerHTML = "Merge Sort";
         }
         this.quickSortSelectHandler = function() {
-            document.getElementById('selectedAlgo').innerHTML = "Quick Sort";
+            document.getElementById('selectedAlgo').getElementsByTagName('dummy')[0].innerHTML = "Quick Sort";
         }
         this.heapSortSelectHandler = function() {
-            document.getElementById('selectedAlgo').innerHTML = "Heap Sort";
+            document.getElementById('selectedAlgo').getElementsByTagName('dummy')[0].innerHTML = "Heap Sort";
         }
         this.sleep = (milliseconds) => {
             return new Promise(resolve => setTimeout(resolve, milliseconds));
@@ -148,6 +148,53 @@ var CardSorter = (function() {
                 document.getElementById("rank"+b).classList.remove("card"+color);
             }
         }
+        this.quickSort = async function(deck, start, end) {
+            if(start >= end) {
+                return;
+            }
+            const pivot = start;
+            let left = start + 1;
+            let right = end;
+            await this.highlightColor(pivot, pivot, "Cyan");
+            while(right >= left) {
+                await this.highlightColor(left, right, "Yellow");
+                if(deck[left] > deck[pivot] && deck[right] < deck[pivot]) {
+                    await this.swap(deck, left, right);
+                }
+                if(deck[left] <= deck[pivot]) {
+                    await this.unhighlightColor(left, left, "Yellow");
+                    if(left + 1 >= right) {
+                        await this.highlightColor(left, left, "Green");
+                    }
+                    left++;
+                }
+                if(deck[right] >= deck[pivot]) {
+                    await this.unhighlightColor(right, right, "Yellow");
+                    if(right - 1 <= left) {
+                        await this.highlightColor(right, right, "Green");
+                    }
+                    right--;
+                }
+            }
+            
+            await this.unhighlightColor(pivot, pivot, "Cyan");
+            await this.swap(deck, pivot, right);
+            await this.highlightColor(pivot, right, "Green");
+
+            const leftSubarrayIsSmaller = right - 1 - start < end - (right+1);
+            if(leftSubarrayIsSmaller) {
+                await this.quickSort(deck, start, right-1);
+                await this.quickSort(deck, right+1, end);
+                
+                await this.highlightColor(start, end, "Green");
+            }
+            else {
+                await this.quickSort(deck, right+1, end);
+                await this.quickSort(deck, start, right-1);
+                await this.highlightColor(start, end, "Green");
+            }
+        }
+
         this.mergeSort = async function(deck, l, r) {
             if (l < r) { 
                 var m = Math.floor(l+(r-l)/2);
@@ -222,7 +269,7 @@ var CardSorter = (function() {
             }
         }
         this.swap = async function(arr, x, y) {
-            await this.sleep(this.speedSlider.value*-1);
+            await this.sleep(parseInt(this.speedSlider.value*-1.22));
             if(x != y) {
                 let temp = arr[x];
                 arr[x] = arr[y];
