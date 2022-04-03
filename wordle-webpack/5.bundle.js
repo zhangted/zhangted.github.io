@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkwordle=self.webpackChunkwordle||[]).push([[5],{5:(e,r,n)=>{n.r(r),n.d(r,{helpers:()=>t});var t={createNode:function(e){var r=arguments.length>1&&void 0!==arguments[1]?arguments[1]:void 0,n=document.createElement(e);for(var t in r)t&&(n[t]=r[t]);return n}}}}]);
