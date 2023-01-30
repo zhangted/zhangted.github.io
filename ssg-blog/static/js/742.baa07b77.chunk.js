@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkstatic_blog_app=self.webpackChunkstatic_blog_app||[]).push([[742],{8742:function(t,c,e){t.exports=e.p+"static/media/teddy.711b1e0012467c7dc74c.md"}}]);
